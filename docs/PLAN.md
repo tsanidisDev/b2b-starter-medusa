@@ -157,16 +157,16 @@
 > Replace `@medusajs/ui` with shadcn components. Build a theme system compatible with shadcnstudio.com.
 
 ### 4.1 Initialize shadcn/ui
-- [ ] Run `npx shadcn@latest init` in storefront
-- [ ] Configure `components.json` (path aliases, style, etc.)
-- [ ] Install core components: `button`, `card`, `dialog`, `dropdown-menu`, `input`, `label`, `select`, `separator`, `sheet`, `skeleton`, `badge`, `avatar`, `accordion`, `tabs`, `toast`, `tooltip`, `popover`, `command`, `table`, `form`, `checkbox`, `radio-group`, `switch`, `textarea`, `navigation-menu`, `breadcrumb`, `carousel`, `aspect-ratio`
+- [x] Run `npx shadcn@latest init` in storefront
+- [x] Configure `components.json` (path aliases, style, etc.)
+- [x] Install core components: `button`, `card`, `dialog`, `dropdown-menu`, `input`, `label`, `select`, `separator`, `sheet`, `skeleton`, `badge`, `avatar`, `accordion`, `tabs`, `toast`, `tooltip`, `popover`, `command`, `table`, `form`, `checkbox`, `radio-group`, `switch`, `textarea`, `navigation-menu`, `breadcrumb`, `carousel`, `aspect-ratio`
 
 ### 4.2 Theming System (shadcnstudio.com compatible)
-- [ ] Rewrite `storefront/src/styles/globals.css` with CSS variables matching the shadcnstudio.com format:
+- [x] Rewrite `storefront/src/styles/globals.css` with CSS variables matching the shadcnstudio.com format:
   - `:root` — light mode variables
   - `.dark` — dark mode variables
   - `@theme inline` — Tailwind v4 theme bindings
-- [ ] Variables to support:
+- [x] Variables to support:
   - `--background`, `--foreground`
   - `--card`, `--card-foreground`
   - `--popover`, `--popover-foreground`
@@ -181,16 +181,15 @@
   - `--font-sans`, `--font-serif`, `--font-mono`
   - `--radius`
   - `--shadow-*` scale
-- [ ] Default theme: warm silk/gold aesthetic (browns, golds, cream)
-- [ ] Dark mode support (toggle in header)
-- [ ] Ensure drop-in replacement: paste any shadcnstudio.com export into globals.css
+- [x] Default theme: warm silk/gold aesthetic (browns, golds, cream)
+- [x] Dark mode support (toggle in header)
+- [x] Ensure drop-in replacement: paste any shadcnstudio.com export into globals.css
 
-### 4.3 Remove @medusajs/ui Dependency
-- [ ] Replace all `@medusajs/ui` component imports with shadcn equivalents
-- [ ] Replace `@medusajs/ui-preset` with shadcn's Tailwind config
-- [ ] Keep `@medusajs/js-sdk` (data fetching — not UI)
-- [ ] Keep `@medusajs/icons` or replace with `lucide-react` (shadcn default)
-- [ ] Remove `@headlessui/react` (shadcn uses Radix natively)
+### 4.3 Bridge @medusajs/ui to Our Theme (No Component Replacement)
+- [x] Override `@medusajs/ui` CSS variables (`--bg-base`, `--fg-base`, `--border-base`, `--button-*`, etc.) in `globals.css` for both light and dark modes
+- [x] `@medusajs/ui` components (Button, Table, Drawer, Prompt, Select, CurrencyInput, StatusBadge…) automatically adopt the silk/gold palette — no import changes needed
+- **Decision:** Keep `@medusajs/ui` and `@medusajs/ui-preset`. New pages/sections use shadcn components. Existing components keep their current imports unchanged.
+- **Why:** 111 files use `@medusajs/ui`. The CSS variable bridge gives us full theming control in one place (~80 CSS variable overrides), making a full component replacement unnecessary and wasteful.
 
 ---
 

@@ -15,6 +15,7 @@
     /* Greek Silk — warm cream/gold light theme */
     --background: oklch(0.98 0.005 85);
     --foreground: oklch(0.18 0.02 60);
+
     --card: oklch(0.99 0.003 85);
     --card-foreground: oklch(0.18 0.02 60);
     --popover: oklch(0.99 0.003 85);
@@ -79,6 +80,118 @@
     --sidebar-accent-foreground: oklch(0.90 0.008 80);
     --sidebar-border: oklch(0.28 0.015 60);
     --sidebar-ring: oklch(0.70 0.12 65);
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     @medusajs/ui CSS variable bridge (light mode)
+     Overrides the preset's default dark-zinc palette so all
+     @medusajs/ui components (Button, Table, Drawer, Prompt…)
+     automatically pick up the silk/gold theme.
+     No component file changes needed.
+     ────────────────────────────────────────────────────────── */
+  :root {
+    /* Backgrounds */
+    --bg-base:                  oklch(0.99 0.003 85);
+    --bg-base-hover:            oklch(0.96 0.008 80);
+    --bg-base-pressed:          oklch(0.93 0.015 80);
+    --bg-subtle:                oklch(0.96 0.008 80);
+    --bg-subtle-hover:          oklch(0.94 0.01  80);
+    --bg-subtle-pressed:        oklch(0.91 0.015 75);
+    --bg-component:             oklch(0.99 0.003 85);
+    --bg-component-hover:       oklch(0.96 0.008 80);
+    --bg-component-pressed:     oklch(0.93 0.015 80);
+    --bg-field:                 oklch(0.98 0.005 85);
+    --bg-field-hover:           oklch(0.95 0.010 80);
+    --bg-field-component:       oklch(0.98 0.005 85);
+    --bg-field-component-hover: oklch(0.95 0.010 80);
+    --bg-interactive:           oklch(0.45 0.08  55);  /* primary */
+    --bg-disabled:              oklch(0.93 0.015 80);
+    --bg-highlight:             oklch(0.93 0.03  75);
+    --bg-highlight-hover:       oklch(0.90 0.04  70);
+    --bg-overlay:               oklch(0.18 0.02 60 / 0.5);
+    --bg-switch-off:            oklch(0.75 0.03  80);
+    --bg-switch-off-hover:      oklch(0.70 0.04  75);
+    /* Foregrounds */
+    --fg-base:                  oklch(0.18 0.02  60);  /* foreground */
+    --fg-subtle:                oklch(0.38 0.03  60);
+    --fg-muted:                 oklch(0.48 0.03  60);  /* muted-foreground */
+    --fg-disabled:              oklch(0.65 0.02  75);
+    --fg-interactive:           oklch(0.45 0.08  55);  /* primary */
+    --fg-interactive-hover:     oklch(0.38 0.09  55);
+    --fg-error:                 oklch(0.55 0.20  25);
+    --fg-on-color:              oklch(0.98 0.005 85);
+    --fg-on-inverted:           oklch(0.98 0.005 85);
+    /* Borders */
+    --border-base:              oklch(0.88 0.015 80);  /* border */
+    --border-strong:            oklch(0.75 0.025 75);
+    --border-interactive:       oklch(0.45 0.08  55);  /* ring */
+    --border-error:             oklch(0.55 0.20  25);
+    --border-danger:            oklch(0.50 0.22  25);
+    --border-transparent:       transparent;
+    /* Buttons */
+    --button-inverted:          oklch(0.18 0.02  60);
+    --button-inverted-hover:    oklch(0.25 0.03  60);
+    --button-inverted-pressed:  oklch(0.30 0.04  60);
+    --button-neutral:           oklch(0.99 0.003 85);
+    --button-neutral-hover:     oklch(0.94 0.01  80);
+    --button-neutral-pressed:   oklch(0.91 0.015 75);
+    --button-danger:            oklch(0.50 0.22  25);
+    --button-danger-hover:      oklch(0.55 0.20  25);
+    --button-danger-pressed:    oklch(0.45 0.22  25);
+    --button-transparent:       transparent;
+    --button-transparent-hover: oklch(0.94 0.01  80);
+    --button-transparent-pressed: oklch(0.91 0.015 75);
+  }
+
+  /* @medusajs/ui bridge — dark mode */
+  .dark {
+    /* Backgrounds */
+    --bg-base:                  oklch(0.19 0.015 60);
+    --bg-base-hover:            oklch(0.22 0.015 60);
+    --bg-base-pressed:          oklch(0.25 0.015 60);
+    --bg-subtle:                oklch(0.21 0.013 60);
+    --bg-subtle-hover:          oklch(0.24 0.013 60);
+    --bg-subtle-pressed:        oklch(0.27 0.013 60);
+    --bg-component:             oklch(0.22 0.015 60);
+    --bg-component-hover:       oklch(0.25 0.015 60);
+    --bg-component-pressed:     oklch(0.28 0.015 60);
+    --bg-field:                 oklch(0.20 0.012 60);
+    --bg-field-hover:           oklch(0.23 0.012 60);
+    --bg-field-component:       oklch(0.20 0.012 60);
+    --bg-field-component-hover: oklch(0.23 0.012 60);
+    --bg-interactive:           oklch(0.70 0.12  65);  /* dark primary */
+    --bg-disabled:              oklch(0.24 0.012 60);
+    --bg-highlight:             oklch(0.26 0.06  65);
+    --bg-highlight-hover:       oklch(0.30 0.07  65);
+    --bg-overlay:               oklch(0.10 0.01 60 / 0.7);
+    --bg-switch-off:            oklch(0.30 0.015 60);
+    --bg-switch-off-hover:      oklch(0.34 0.015 60);
+    /* Foregrounds */
+    --fg-base:                  oklch(0.93 0.008 80);
+    --fg-subtle:                oklch(0.75 0.015 75);
+    --fg-muted:                 oklch(0.62 0.02  75);
+    --fg-disabled:              oklch(0.40 0.015 65);
+    --fg-interactive:           oklch(0.70 0.12  65);
+    --fg-interactive-hover:     oklch(0.78 0.10  65);
+    --fg-error:                 oklch(0.65 0.20  25);
+    --fg-on-color:              oklch(0.14 0.01  60);
+    --fg-on-inverted:           oklch(0.14 0.01  60);
+    /* Borders */
+    --border-base:              oklch(0.28 0.015 60);
+    --border-strong:            oklch(0.38 0.02  65);
+    --border-interactive:       oklch(0.70 0.12  65);
+    --border-error:             oklch(0.65 0.20  25);
+    --border-danger:            oklch(0.60 0.22  25);
+    /* Buttons */
+    --button-inverted:          oklch(0.90 0.008 80);
+    --button-inverted-hover:    oklch(0.95 0.005 85);
+    --button-inverted-pressed:  oklch(0.98 0.003 85);
+    --button-neutral:           oklch(0.22 0.012 60);
+    --button-neutral-hover:     oklch(0.26 0.012 60);
+    --button-neutral-pressed:   oklch(0.30 0.012 60);
+    --button-danger:            oklch(0.55 0.22  25);
+    --button-danger-hover:      oklch(0.60 0.20  25);
+    --button-danger-pressed:    oklch(0.50 0.22  25);
   }
 
   * {
