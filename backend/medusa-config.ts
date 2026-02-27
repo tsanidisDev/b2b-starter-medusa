@@ -15,6 +15,11 @@ module.exports = defineConfig({
       jwtSecret: process.env.JWT_SECRET || "supersecret",
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
     },
+    databaseDriverOptions: {
+      ssl: false,
+      sslmode: "disable",
+    },
+
   },
   modules: {
     [COMPANY_MODULE]: {
@@ -33,4 +38,26 @@ module.exports = defineConfig({
       resolve: "@medusajs/medusa/workflow-engine-inmemory",
     },
   },
-});
+  admin: {
+    vite: (config) => {
+      return {
+        server: {
+          host: "0.0.0.0",
+          // Allow all hosts when running in Docker (development mode)
+          // In production, this should be more restrictive
+          allowedHosts: [
+            "localhost",
+            ".localhost",
+            "127.0.0.1",
+          ],
+          hmr: {
+            // HMR websocket port inside container
+            port: 5173,
+            // Port browser connects to (exposed in docker-compose.yml)
+            clientPort: 5173,
+          },
+        },
+      }
+    },
+
+  });
