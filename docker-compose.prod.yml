@@ -1,0 +1,188 @@
+# Production Docker Compose for Medusa B2B Starter
+#
+# Usage:
+#   1. Copy .env.prod.example to .env.prod and fill in all values.
+#   2. Run database migrations (first deploy or after upgrades):
+#        docker compose -f docker-compose.prod.yml --env-file .env.prod \
+#          run --rm medusa-migrate
+#   3. Start all services:
+#        docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+#
+# To rebuild images (e.g. after a code change):
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up --build -d
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL – internal only, not exposed on the host network
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: medusa_postgres_prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-medusa-store}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - medusa_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Redis – internal only, not exposed on the host network
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: medusa_redis_prod
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - medusa_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # One-off migration service – run manually before (re-)deploying the backend
+  #   docker compose -f docker-compose.prod.yml --env-file .env.prod \
+  #     run --rm medusa-migrate
+  # ---------------------------------------------------------------------------
+  medusa-migrate:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    image: medusa-backend-prod
+    container_name: medusa_migrate
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      REDIS_URL: ${REDIS_URL:?REDIS_URL is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      COOKIE_SECRET: ${COOKIE_SECRET:?COOKIE_SECRET is required}
+      STORE_CORS: ${STORE_CORS:-http://localhost:8000}
+      ADMIN_CORS: ${ADMIN_CORS:-http://localhost:9000}
+      AUTH_CORS: ${AUTH_CORS:-http://localhost:9000}
+    command: ["yarn", "medusa", "db:migrate"]
+    networks:
+      - medusa_network
+    profiles:
+      - migration
+
+  # ---------------------------------------------------------------------------
+  # Medusa Server – serves the REST API and the Admin dashboard
+  # ---------------------------------------------------------------------------
+  medusa-server:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    image: medusa-backend-prod
+    container_name: medusa_server_prod
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:9000:9000"
+    environment:
+      NODE_ENV: production
+      MEDUSA_WORKER_MODE: server
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      REDIS_URL: ${REDIS_URL:?REDIS_URL is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      COOKIE_SECRET: ${COOKIE_SECRET:?COOKIE_SECRET is required}
+      STORE_CORS: ${STORE_CORS:-http://localhost:8000}
+      ADMIN_CORS: ${ADMIN_CORS:-http://localhost:9000}
+      AUTH_CORS: ${AUTH_CORS:-http://localhost:9000}
+    networks:
+      - medusa_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ---------------------------------------------------------------------------
+  # Medusa Worker – processes background jobs / workflow engine
+  # ---------------------------------------------------------------------------
+  medusa-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    image: medusa-backend-prod
+    container_name: medusa_worker_prod
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      medusa-server:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      MEDUSA_WORKER_MODE: worker
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      REDIS_URL: ${REDIS_URL:?REDIS_URL is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      COOKIE_SECRET: ${COOKIE_SECRET:?COOKIE_SECRET is required}
+      STORE_CORS: ${STORE_CORS:-http://localhost:8000}
+      ADMIN_CORS: ${ADMIN_CORS:-http://localhost:9000}
+      AUTH_CORS: ${AUTH_CORS:-http://localhost:9000}
+    networks:
+      - medusa_network
+
+  # ---------------------------------------------------------------------------
+  # Storefront – Next.js app built for production
+  # The image must be (re-)built after NEXT_PUBLIC_* values change.
+  # ---------------------------------------------------------------------------
+  storefront:
+    build:
+      context: ./storefront
+      dockerfile: Dockerfile.prod
+      args:
+        NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${NEXT_PUBLIC_MEDUSA_BACKEND_URL:-http://localhost:9000}
+        NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY:?NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY is required}
+        NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-http://localhost:8000}
+        NEXT_PUBLIC_DEFAULT_REGION: ${NEXT_PUBLIC_DEFAULT_REGION:-us}
+    container_name: medusa_storefront_prod
+    restart: unless-stopped
+    depends_on:
+      medusa-server:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      NODE_ENV: production
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:?REVALIDATE_SECRET is required}
+    networks:
+      - medusa_network
+
+# ---------------------------------------------------------------------------
+# Named volumes – data persisted across container restarts
+# ---------------------------------------------------------------------------
+volumes:
+  postgres_data:
+  redis_data:
+
+# ---------------------------------------------------------------------------
+# Internal bridge network – services talk to each other by service name
+# ---------------------------------------------------------------------------
+networks:
+  medusa_network:
+    driver: bridge
