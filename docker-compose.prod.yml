@@ -1,20 +1,61 @@
 # Production Docker Compose for Medusa B2B Starter
+# WITH NGINX REVERSE PROXY
+#
+# Architecture:
+#   - Nginx: Reverse proxy handling all external traffic (port 80)
+#   - Medusa Server: Handles API requests and Admin (server mode)
+#   - Medusa Worker: Processes background jobs (worker mode)
+#   - Storefront: Next.js application
+#   - PostgreSQL: Database (internal only)
+#   - Redis: Cache/sessions/workflow engine (internal only)
 #
 # Usage:
-#   1. Copy .env.prod.example to .env.prod and fill in all values.
-#   2. Run database migrations (first deploy or after upgrades):
+#   1. Copy .env.prod.example to .env.prod and fill in all values
+#   2. Run migrations:
 #        docker compose -f docker-compose.prod.yml --env-file .env.prod \
 #          run --rm medusa-migrate
 #   3. Start all services:
 #        docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
-#
-# To rebuild images (e.g. after a code change):
-#   docker compose -f docker-compose.prod.yml --env-file .env.prod up --build -d
+#   4. Access the application:
+#        - Storefront: http://localhost
+#        - Admin: http://localhost/app
+#        - API: http://localhost/api
 
 services:
 
   # ---------------------------------------------------------------------------
-  # PostgreSQL – internal only, not exposed on the host network
+  # NGINX - Reverse Proxy (Entrypoint for all traffic)
+  # ---------------------------------------------------------------------------
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: medusa_nginx_prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      medusa:
+        condition: service_healthy
+      storefront:
+        condition: service_started
+    environment:
+      DOMAIN: ${DOMAIN:?DOMAIN is required — set it in .env.prod}
+    volumes:
+      - letsencrypt_data:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
+    networks:
+      - medusa_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL - Database (internal only)
   # ---------------------------------------------------------------------------
   postgres:
     image: postgres:15-alpine
@@ -33,14 +74,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    # Security: Do NOT expose PostgreSQL ports to host in production
 
   # ---------------------------------------------------------------------------
-  # Redis – internal only, not exposed on the host network
+  # Redis - Cache/Sessions/Workflow Engine (internal only)
   # ---------------------------------------------------------------------------
   redis:
     image: redis:7-alpine
     container_name: medusa_redis_prod
     restart: unless-stopped
+    # noeviction is required by Medusa's workflow engine (BullMQ)
+    command: redis-server --maxmemory 512mb --maxmemory-policy noeviction
     volumes:
       - redis_data:/data
     networks:
@@ -50,9 +94,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    # Security: Do NOT expose Redis ports to host in production
 
   # ---------------------------------------------------------------------------
-  # One-off migration service – run manually before (re-)deploying the backend
+  # Migration Service (one-off)
+  # Run manually before deployment:
   #   docker compose -f docker-compose.prod.yml --env-file .env.prod \
   #     run --rm medusa-migrate
   # ---------------------------------------------------------------------------
@@ -66,28 +112,33 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       NODE_ENV: production
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
       REDIS_URL: ${REDIS_URL:?REDIS_URL is required}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       COOKIE_SECRET: ${COOKIE_SECRET:?COOKIE_SECRET is required}
-      STORE_CORS: ${STORE_CORS:-http://localhost:8000}
-      ADMIN_CORS: ${ADMIN_CORS:-http://localhost:9000}
-      AUTH_CORS: ${AUTH_CORS:-http://localhost:9000}
+      STORE_CORS: https://${DOMAIN}
+      ADMIN_CORS: https://${DOMAIN}
+      AUTH_CORS: https://${DOMAIN}
+      MEDUSA_WORKER_MODE: shared
+      DISABLE_MEDUSA_ADMIN: "true"
     command: ["yarn", "medusa", "db:migrate"]
     networks:
       - medusa_network
-    profiles:
-      - migration
 
   # ---------------------------------------------------------------------------
-  # Medusa Server – serves the REST API and the Admin dashboard
+  # Medusa Server (SERVER MODE ONLY)
+  # Handles API requests and serves Admin dashboard
   # ---------------------------------------------------------------------------
-  medusa-server:
+  medusa:
     build:
       context: ./backend
       dockerfile: Dockerfile.prod
+      args:
+        MEDUSA_BACKEND_URL: https://${DOMAIN}
     image: medusa-backend-prod
     container_name: medusa_server_prod
     restart: unless-stopped
@@ -96,29 +147,33 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    ports:
-      - "127.0.0.1:9000:9000"
     environment:
       NODE_ENV: production
       MEDUSA_WORKER_MODE: server
+      DISABLE_MEDUSA_ADMIN: "false"
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
       REDIS_URL: ${REDIS_URL:?REDIS_URL is required}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       COOKIE_SECRET: ${COOKIE_SECRET:?COOKIE_SECRET is required}
-      STORE_CORS: ${STORE_CORS:-http://localhost:8000}
-      ADMIN_CORS: ${ADMIN_CORS:-http://localhost:9000}
-      AUTH_CORS: ${AUTH_CORS:-http://localhost:9000}
+      STORE_CORS: https://${DOMAIN}
+      ADMIN_CORS: https://${DOMAIN}
+      AUTH_CORS: https://${DOMAIN}
+      MEDUSA_BACKEND_URL: https://${DOMAIN}
+      MEDUSA_STOREFRONT_URL: https://${DOMAIN}
+      PORT: 9000
     networks:
       - medusa_network
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/health || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9000/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 60s
+    # Do NOT expose port 9000 to host - nginx handles all external traffic
 
   # ---------------------------------------------------------------------------
-  # Medusa Worker – processes background jobs / workflow engine
+  # Medusa Worker (WORKER MODE ONLY)
+  # Processes background jobs, workflows, scheduled jobs, subscribers
   # ---------------------------------------------------------------------------
   medusa-worker:
     build:
@@ -132,56 +187,88 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      medusa-server:
+      medusa:
         condition: service_healthy
     environment:
       NODE_ENV: production
       MEDUSA_WORKER_MODE: worker
+      DISABLE_MEDUSA_ADMIN: "true"
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
       REDIS_URL: ${REDIS_URL:?REDIS_URL is required}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       COOKIE_SECRET: ${COOKIE_SECRET:?COOKIE_SECRET is required}
-      STORE_CORS: ${STORE_CORS:-http://localhost:8000}
-      ADMIN_CORS: ${ADMIN_CORS:-http://localhost:9000}
-      AUTH_CORS: ${AUTH_CORS:-http://localhost:9000}
+      STORE_CORS: https://${DOMAIN}
+      ADMIN_CORS: https://${DOMAIN}
+      AUTH_CORS: https://${DOMAIN}
     networks:
       - medusa_network
+    # Worker has no health check - it doesn't expose HTTP endpoints
 
   # ---------------------------------------------------------------------------
-  # Storefront – Next.js app built for production
-  # The image must be (re-)built after NEXT_PUBLIC_* values change.
+  # Storefront (Next.js)
+  # NEXT_PUBLIC_* variables are baked into the build
+  # Rebuild the image if these values change
   # ---------------------------------------------------------------------------
   storefront:
     build:
       context: ./storefront
       dockerfile: Dockerfile.prod
       args:
-        NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${NEXT_PUBLIC_MEDUSA_BACKEND_URL:-http://localhost:9000}
+        NEXT_PUBLIC_MEDUSA_BACKEND_URL: https://${DOMAIN}
         NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY:?NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY is required}
-        NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-http://localhost:8000}
+        NEXT_PUBLIC_BASE_URL: https://${DOMAIN}
         NEXT_PUBLIC_DEFAULT_REGION: ${NEXT_PUBLIC_DEFAULT_REGION:-us}
     container_name: medusa_storefront_prod
     restart: unless-stopped
     depends_on:
-      medusa-server:
+      medusa:
         condition: service_healthy
-    ports:
-      - "127.0.0.1:8000:8000"
     environment:
       NODE_ENV: production
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:?REVALIDATE_SECRET is required}
+      PORT: 3000
+      # Server-side only: storefront SSR/middleware reaches Medusa directly via Docker network
+      # This is NOT baked into client JS - browser still uses NEXT_PUBLIC_MEDUSA_BACKEND_URL
+      MEDUSA_BACKEND_URL: http://medusa:9000
+    networks:
+      - medusa_network
+    # Do NOT expose port 3000 to host - nginx handles all external traffic
+
+  # ---------------------------------------------------------------------------
+  # Certbot — TLS certificate issuance and auto-renewal (Let's Encrypt)
+  # Run once manually: bash scripts/init-ssl.sh
+  # Auto-renewal: runs every 12 h inside this container
+  # ---------------------------------------------------------------------------
+  certbot:
+    image: certbot/certbot
+    container_name: medusa_certbot_prod
+    restart: unless-stopped
+    volumes:
+      - letsencrypt_data:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
+    # Attempt renewal every 12 h; certbot skips if cert is still valid
+    entrypoint: /bin/sh -c 'trap exit TERM; while :; do certbot renew --quiet; sleep 12h & wait $${!}; done'
+    depends_on:
+      - nginx
     networks:
       - medusa_network
 
 # ---------------------------------------------------------------------------
-# Named volumes – data persisted across container restarts
+# Named volumes - Data persisted across container restarts
 # ---------------------------------------------------------------------------
 volumes:
   postgres_data:
+    driver: local
   redis_data:
+    driver: local
+  letsencrypt_data:
+    driver: local
+  certbot_webroot:
+    driver: local
 
 # ---------------------------------------------------------------------------
-# Internal bridge network – services talk to each other by service name
+# Internal bridge network - Services communicate by service name
+# Security: No ports exposed to 0.0.0.0, only nginx listens on port 80
 # ---------------------------------------------------------------------------
 networks:
   medusa_network:

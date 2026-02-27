@@ -6,14 +6,11 @@ WORKDIR /app
 # Enable corepack so Yarn 4 (Berry) is available
 RUN corepack enable
 
-# Copy package manifests first for better layer caching
-COPY package.json yarn.lock .yarnrc.yml ./
-
-# Install all dependencies
-RUN yarn install --immutable
-
-# Copy the rest of the source
+# Copy all source first (Yarn 4 workspace requires package.json present at install time)
 COPY . .
+
+# Install all dependencies (lockfile may be updated; --no-immutable for cross-platform compat)
+RUN yarn install --no-immutable
 
 # NEXT_PUBLIC_* variables are inlined at build time by Next.js.
 # Pass them as build args and expose them as environment variables
@@ -43,9 +40,7 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
-EXPOSE 8000
-
-# Next.js standalone server listens on PORT env var (default 3000)
-ENV PORT=8000
+# PORT is set by docker-compose (3000); EXPOSE is informational only
+EXPOSE 3000
 
 CMD ["node", "server.js"]

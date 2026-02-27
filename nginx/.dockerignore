@@ -1,0 +1,19 @@
+# --- nginx/.dockerignore ---
+
+# Runtime-generated cert dirs (certs live in named volumes, not the image)
+certs/
+*.pem
+*.key
+*.crt
+
+# Editor / OS noise
+.DS_Store
+*.swp
+*.swo
+
+# Git
+.git
+.gitignore
+
+# Docs
+README.md

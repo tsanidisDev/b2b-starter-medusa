@@ -39,6 +39,20 @@ yarn-error.log*
 **/.env.test.local
 **/.env.production.local
 
+# Production secrets — NEVER commit these
+.env.prod
+*.backup
+*.bak
+
+# Let's Encrypt certificates (managed by certbot container)
+nginx/certs/
+
+# Compiled Medusa build output
+backend/.medusa/
+
+# Next.js build output
+storefront/.next/
+
 # Turbo
 .turbo
 

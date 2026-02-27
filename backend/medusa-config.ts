@@ -8,6 +8,8 @@ loadEnv(process.env.NODE_ENV!, process.cwd());
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
+    redisUrl: process.env.REDIS_URL,
+    workerMode: (process.env.MEDUSA_WORKER_MODE as "shared" | "server" | "worker") || "shared",
     http: {
       storeCors: process.env.STORE_CORS!,
       adminCors: process.env.ADMIN_CORS!,
@@ -19,7 +21,6 @@ module.exports = defineConfig({
       ssl: false,
       sslmode: "disable",
     },
-
   },
   modules: {
     [COMPANY_MODULE]: {
@@ -31,49 +32,40 @@ module.exports = defineConfig({
     [APPROVAL_MODULE]: {
       resolve: "./modules/approval",
     },
-    [Modules.CACHE]: process.env.REDIS_URL
+    // Production: Redis event bus (falls back to local in dev when REDIS_URL is unset)
+    ...(process.env.REDIS_URL
       ? {
-          resolve: "@medusajs/medusa/cache-redis",
-          options: {
-            redisUrl: process.env.REDIS_URL,
+          [Modules.EVENT_BUS]: {
+            resolve: "@medusajs/medusa/event-bus-redis",
+            options: { redisUrl: process.env.REDIS_URL },
           },
-        }
-      : {
-          resolve: "@medusajs/medusa/cache-inmemory",
-        },
-    [Modules.WORKFLOW_ENGINE]: process.env.REDIS_URL
-      ? {
-          resolve: "@medusajs/medusa/workflow-engine-redis",
-          options: {
-            redis: {
-              url: process.env.REDIS_URL,
+          [Modules.WORKFLOW_ENGINE]: {
+            resolve: "@medusajs/medusa/workflow-engine-redis",
+            options: {
+              redis: { url: process.env.REDIS_URL },
             },
           },
         }
       : {
-          resolve: "@medusajs/medusa/workflow-engine-inmemory",
-        },
+          [Modules.WORKFLOW_ENGINE]: {
+            resolve: "@medusajs/medusa/workflow-engine-inmemory",
+          },
+        }),
   },
   admin: {
-    vite: (config) => {
-      return {
-        server: {
-          host: "0.0.0.0",
-          // Allow all hosts when running in Docker (development mode)
-          // In production, this should be more restrictive
-          allowedHosts: [
-            "localhost",
-            ".localhost",
-            "127.0.0.1",
-          ],
-          hmr: {
-            // HMR websocket port inside container
-            port: 5173,
-            // Port browser connects to (exposed in docker-compose.yml)
-            clientPort: 5173,
-          },
+    disable: process.env.DISABLE_MEDUSA_ADMIN === "true",
+    backendUrl: process.env.MEDUSA_BACKEND_URL || "http://localhost:9000",
+    storefrontUrl: process.env.MEDUSA_STOREFRONT_URL || "http://localhost:8000",
+    vite: () => ({
+      server: {
+        host: "0.0.0.0",
+        allowedHosts: ["localhost", ".localhost", "127.0.0.1"],
+        hmr: {
+          // HMR websocket port inside container (dev only)
+          port: 5173,
+          clientPort: 5173,
         },
-      }
-    },
-
-  });
+      },
+    }),
+  },
+});
