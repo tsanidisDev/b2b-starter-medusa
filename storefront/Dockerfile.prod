@@ -1,0 +1,51 @@
+# ---- Build Stage ----
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Enable corepack so Yarn 4 (Berry) is available
+RUN corepack enable
+
+# Copy package manifests first for better layer caching
+COPY package.json yarn.lock .yarnrc.yml ./
+
+# Install all dependencies
+RUN yarn install --immutable
+
+# Copy the rest of the source
+COPY . .
+
+# NEXT_PUBLIC_* variables are inlined at build time by Next.js.
+# Pass them as build args and expose them as environment variables
+# so `next build` can embed the correct values.
+ARG NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000
+ARG NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+ARG NEXT_PUBLIC_BASE_URL=http://localhost:8000
+ARG NEXT_PUBLIC_DEFAULT_REGION=us
+
+ENV NEXT_PUBLIC_MEDUSA_BACKEND_URL=$NEXT_PUBLIC_MEDUSA_BACKEND_URL
+ENV NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=$NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+ENV NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL
+ENV NEXT_PUBLIC_DEFAULT_REGION=$NEXT_PUBLIC_DEFAULT_REGION
+
+# Build the Next.js app (standalone output configured in next.config.js)
+RUN yarn build
+
+# ---- Production Stage ----
+FROM node:20-alpine
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# standalone output is self-contained – copy only what's needed
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+
+EXPOSE 8000
+
+# Next.js standalone server listens on PORT env var (default 3000)
+ENV PORT=8000
+
+CMD ["node", "server.js"]

@@ -36,6 +36,7 @@
   - [Features](#features)
   - [Demo](#demo)
 - [Quickstart](#quickstart)
+- [Production Deployment (Docker)](#production-deployment-docker)
 - [Update](#update)
 - [Resources](#resources)
 - [Contributors](#contributors)
@@ -167,6 +168,113 @@ Visit the following links to see the Medusa storefront & admin
 
 - [Medusa Admin](http://localhost:9000/app)
 - [Medusa Storefront](http://localhost:8000)
+
+&nbsp;
+
+# Production Deployment (Docker)
+
+The repository ships a `docker-compose.prod.yml` that brings up a full production-like stack:
+
+| Service | Description |
+|---|---|
+| `postgres` | PostgreSQL 15 database (internal, no host port) |
+| `redis` | Redis 7 cache & workflow engine (internal, no host port) |
+| `medusa-migrate` | One-off migration runner (profile `migration`) |
+| `medusa-server` | Medusa API server (port `9000`, localhost-bound) |
+| `medusa-worker` | Medusa background worker |
+| `storefront` | Next.js storefront (port `8000`, localhost-bound) |
+
+> **Reverse proxy / HTTPS**: In production, place a reverse proxy (nginx, Caddy, Traefik …) in front of ports `9000` and `8000`. The ports are bound to `127.0.0.1` by default so they are not reachable from the internet without the proxy.
+
+## 1 – Prerequisites
+
+- Docker Engine ≥ 24 and Docker Compose plugin (V2)
+- A VPS or server with at least 2 GB RAM
+
+## 2 – Prepare environment file
+
+```bash
+cp .env.prod.example .env.prod
+```
+
+Open `.env.prod` and fill in every required value:
+
+| Variable | How to obtain |
+|---|---|
+| `POSTGRES_PASSWORD` | Pick a strong password |
+| `DATABASE_URL` | Use the same password as above |
+| `JWT_SECRET` | `openssl rand -hex 32` |
+| `COOKIE_SECRET` | `openssl rand -hex 32` |
+| `REVALIDATE_SECRET` | `openssl rand -hex 32` |
+| `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` | See step 5 below |
+| `STORE_CORS` / `ADMIN_CORS` / `AUTH_CORS` | Set to your public URLs once you have a domain |
+
+> ⚠️ **Never use the default `supersecret` values in production.** The compose file will refuse to start if `JWT_SECRET`, `COOKIE_SECRET`, or `POSTGRES_PASSWORD` are empty.
+
+## 3 – Run database migrations
+
+Migrations must be run before (or after an upgrade of) the backend:
+
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env.prod \
+  run --rm medusa-migrate
+```
+
+## 4 – Build images and start the backend
+
+```bash
+# Build all images and start postgres, redis, medusa-server, medusa-worker
+docker compose -f docker-compose.prod.yml --env-file .env.prod \
+  up --build -d postgres redis medusa-server medusa-worker
+```
+
+Wait for `medusa-server` to become healthy (watch logs with `docker compose -f docker-compose.prod.yml logs -f medusa-server`).
+
+## 5 – Create an admin user & get the publishable key
+
+```bash
+# Create an admin user (run once; replace the password with a strong value)
+docker compose -f docker-compose.prod.yml --env-file .env.prod \
+  exec medusa-server yarn medusa user -e admin@example.com -p STRONG_PASSWORD_HERE -i admin
+```
+
+Then:
+
+1. Open the Medusa Admin at `http://<your-server>:9000/app` (or via your reverse proxy).
+2. Go to **Settings → Publishable API keys**.
+3. Copy the key for the **Webshop** channel.
+4. Set `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` in `.env.prod`.
+
+## 6 – Build and start the storefront
+
+Because `NEXT_PUBLIC_*` variables are baked into the Next.js bundle at build time, the storefront image must be built **after** you have the publishable key:
+
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env.prod \
+  up --build -d storefront
+```
+
+## 7 – Seed demo data (optional)
+
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env.prod \
+  exec medusa-server yarn seed
+```
+
+## Access URLs
+
+| Service | Default URL (localhost) |
+|---|---|
+| Medusa Admin | `http://localhost:9000/app` |
+| Medusa API | `http://localhost:9000` |
+| Storefront | `http://localhost:8000` |
+
+## Rebuilding after code changes
+
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env.prod \
+  up --build -d
+```
 
 &nbsp;
 

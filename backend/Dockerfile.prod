@@ -1,0 +1,43 @@
+# ---- Build Stage ----
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Enable corepack so Yarn 4 (Berry) is available
+RUN corepack enable
+
+# Copy package manifests first for better layer caching
+COPY package.json yarn.lock .yarnrc.yml ./
+
+# Install ALL dependencies (devDeps are needed for `medusa build`)
+RUN yarn install --immutable
+
+# Copy the rest of the source
+COPY . .
+
+# Compile TypeScript and build the Medusa admin UI
+# Output lands in .medusa/server/
+RUN yarn build
+
+# ---- Production Stage ----
+FROM node:20-alpine
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+RUN corepack enable
+
+# Copy package manifests and the full node_modules from the builder.
+# Yarn v4 with nodeLinker: node-modules = standard node_modules directory,
+# so we can reuse it directly without re-installing.
+COPY --from=builder /app/node_modules ./node_modules
+COPY package.json yarn.lock .yarnrc.yml ./
+
+# Copy the compiled Medusa server
+COPY --from=builder /app/.medusa ./.medusa
+
+EXPOSE 9000
+
+# medusa start runs the pre-built output in .medusa/server/
+CMD ["yarn", "start"]

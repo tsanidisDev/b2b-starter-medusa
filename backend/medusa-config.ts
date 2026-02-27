@@ -31,12 +31,28 @@ module.exports = defineConfig({
     [APPROVAL_MODULE]: {
       resolve: "./modules/approval",
     },
-    [Modules.CACHE]: {
-      resolve: "@medusajs/medusa/cache-inmemory",
-    },
-    [Modules.WORKFLOW_ENGINE]: {
-      resolve: "@medusajs/medusa/workflow-engine-inmemory",
-    },
+    [Modules.CACHE]: process.env.REDIS_URL
+      ? {
+          resolve: "@medusajs/medusa/cache-redis",
+          options: {
+            redisUrl: process.env.REDIS_URL,
+          },
+        }
+      : {
+          resolve: "@medusajs/medusa/cache-inmemory",
+        },
+    [Modules.WORKFLOW_ENGINE]: process.env.REDIS_URL
+      ? {
+          resolve: "@medusajs/medusa/workflow-engine-redis",
+          options: {
+            redis: {
+              url: process.env.REDIS_URL,
+            },
+          },
+        }
+      : {
+          resolve: "@medusajs/medusa/workflow-engine-inmemory",
+        },
   },
   admin: {
     vite: (config) => {
