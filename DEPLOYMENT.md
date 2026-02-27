@@ -80,10 +80,18 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod exec postgres \
 
 Copy the `pk_...` value into `.env.prod` as `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY`.
 
-> **Default admin credentials created by seed:** `admin@medusa-test.com` / `supersecret`  
-> Change these immediately in the Medusa admin after first login.
+### 6. Create an admin user
 
-### 6. Build and start the storefront
+The seed script does **not** create an admin user. Create one manually:
+
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env.prod exec medusa \
+  node_modules/.bin/medusa user -e admin@example.com -p YourPassword123!
+```
+
+Then log in at `https://$DOMAIN/app`.
+
+### 7. Build and start the storefront
 
 ```bash
 docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build storefront
