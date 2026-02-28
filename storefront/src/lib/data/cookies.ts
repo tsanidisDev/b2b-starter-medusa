@@ -69,6 +69,54 @@ export const removeAuthToken = async () => {
   cookies.delete("_medusa_jwt")
 }
 
+// ── Channel (B2C / B2B) ───────────────────────────────────────────────────
+
+export type Channel = "b2c" | "b2b"
+
+export const CHANNEL_COOKIE = "_medusa_channel"
+
+export const getActiveChannel = async (): Promise<Channel> => {
+  try {
+    const cookies = await nextCookies()
+    const value = cookies.get(CHANNEL_COOKIE)?.value
+    return value === "b2b" ? "b2b" : "b2c"
+  } catch {
+    return "b2c"
+  }
+}
+
+export const getPublishableKey = async (): Promise<string> => {
+  const channel = await getActiveChannel()
+  if (channel === "b2b") {
+    return (
+      process.env.NEXT_PUBLIC_MEDUSA_B2B_PUBLISHABLE_KEY ||
+      process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ||
+      ""
+    )
+  }
+  return (
+    process.env.NEXT_PUBLIC_MEDUSA_B2C_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ||
+    ""
+  )
+}
+
+export const getPublishableKeyHeader = async (): Promise<
+  { "x-publishable-api-key": string } | {}
+> => {
+  const key = await getPublishableKey()
+  return key ? { "x-publishable-api-key": key } : {}
+}
+
+export const setActiveChannel = async (channel: Channel) => {
+  const cookies = await nextCookies()
+  cookies.set(CHANNEL_COOKIE, channel, {
+    maxAge: 60 * 60 * 24 * 30, // 30 days
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  })
+}
+
 export const getCartId = async () => {
   const cookies = await nextCookies()
 

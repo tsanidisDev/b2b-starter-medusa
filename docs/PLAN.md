@@ -63,11 +63,15 @@
 - Server-side: read cookie in middleware, set correct API key header
 
 ### 3.2 Implementation
-- [ ] Create `storefront/src/lib/context/channel-context.tsx`
-- [ ] Create `ChannelSelector` dropdown component (shadcn `Select`)
-- [ ] Update `storefront/src/lib/data/` fetch helpers to use dynamic publishable key
-- [ ] Update `storefront/src/middleware.ts` to read channel cookie
-- [ ] Add `NEXT_PUBLIC_MEDUSA_B2C_PUBLISHABLE_KEY` and `NEXT_PUBLIC_MEDUSA_B2B_PUBLISHABLE_KEY` env vars
+- [x] Create `storefront/src/lib/context/channel-context.tsx`
+- [x] Create `ChannelSelector` dropdown component (`storefront/src/modules/layout/components/channel-selector/index.tsx`)
+- [x] Create `storefront/src/lib/data/channel.ts` — `switchChannelAction` server action
+- [x] Update `storefront/src/lib/data/cookies.ts` — `getActiveChannel()`, `getPublishableKey()`, `getPublishableKeyHeader()`, `setActiveChannel()`
+- [x] Update `storefront/src/lib/config.ts` — `getChannelSDK()` async helper
+- [x] Update `storefront/src/middleware.ts` to read channel cookie for region fetch
+- [x] Add `NEXT_PUBLIC_MEDUSA_B2C_PUBLISHABLE_KEY` and `NEXT_PUBLIC_MEDUSA_B2B_PUBLISHABLE_KEY` env vars
+- [x] Wire `ChannelProvider` into root `layout.tsx`
+- [x] Add `ChannelSelector` to nav header
 - [ ] Show wholesale pricing in B2B mode, retail pricing in B2C mode
 - [ ] B2B mode: show company features (quotes, approvals, spending limits)
 - [ ] B2C mode: hide company features, show standard checkout

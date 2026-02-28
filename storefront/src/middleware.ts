@@ -4,15 +4,29 @@ import { NextRequest, NextResponse } from "next/server"
 const BACKEND_URL =
   process.env.MEDUSA_BACKEND_URL ||
   process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+
+const B2C_KEY =
+  process.env.NEXT_PUBLIC_MEDUSA_B2C_PUBLISHABLE_KEY ||
+  process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+
+const B2B_KEY =
+  process.env.NEXT_PUBLIC_MEDUSA_B2B_PUBLISHABLE_KEY ||
+  process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+
 const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || "us"
+
+/** Returns the correct publishable key based on the channel cookie. */
+function getPublishableKey(request: NextRequest): string {
+  const channel = request.cookies.get("_medusa_channel")?.value
+  return (channel === "b2b" ? B2B_KEY : B2C_KEY) ?? ""
+}
 
 const regionMapCache = {
   regionMap: new Map<string, HttpTypes.StoreRegion>(),
   regionMapUpdated: Date.now(),
 }
 
-async function getRegionMap(cacheId: string) {
+async function getRegionMap(cacheId: string, publishableKey: string) {
   const { regionMap, regionMapUpdated } = regionMapCache
 
   if (
@@ -22,7 +36,7 @@ async function getRegionMap(cacheId: string) {
     // Fetch regions from Medusa. We can't use the JS client here because middleware is running on Edge and the client needs a Node environment.
     const { regions } = await fetch(`${BACKEND_URL}/store/regions`, {
       headers: {
-        "x-publishable-api-key": PUBLISHABLE_API_KEY!,
+        "x-publishable-api-key": publishableKey,
       },
       next: {
         revalidate: 3600,
@@ -124,7 +138,8 @@ export async function middleware(request: NextRequest) {
   // Set a cache id to invalidate the cache for this instance only
   const cacheId = await setCacheId(request, response)
 
-  const regionMap = await getRegionMap(cacheId)
+  const publishableKey = getPublishableKey(request)
+  const regionMap = await getRegionMap(cacheId, publishableKey)
 
   const countryCode = regionMap && (await getCountryCode(request, regionMap))
 

@@ -6,6 +6,7 @@ import LocalizedClientLink from "@/modules/common/components/localized-client-li
 import FilePlus from "@/modules/common/icons/file-plus"
 import LogoIcon from "@/modules/common/icons/logo"
 import { MegaMenuWrapper } from "@/modules/layout/components/mega-menu"
+import { ChannelSelector } from "@/modules/layout/components/channel-selector"
 import { RequestQuoteConfirmation } from "@/modules/quotes/components/request-quote-confirmation"
 import { RequestQuotePrompt } from "@/modules/quotes/components/request-quote-prompt"
 import SkeletonAccountButton from "@/modules/skeletons/components/skeleton-account-button"
@@ -52,6 +53,8 @@ export async function NavigationHeader() {
                 title="Install a search provider to enable product search"
               />
             </div>
+
+            <ChannelSelector className="hidden small:flex" />
 
             <div className="h-4 w-px bg-neutral-300" />
 
