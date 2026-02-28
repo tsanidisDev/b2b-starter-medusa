@@ -66,17 +66,17 @@ export default async function Footer() {
             </div>
           )}
 
-          {/* Company */}
+          {/* Info */}
           <div className="flex flex-col gap-3">
             <span className="text-xs font-semibold uppercase tracking-widest text-foreground">
-              Company
+              Info
             </span>
             <ul className="flex flex-col gap-2">
               {[
-                { label: "Our Story", href: "/about" },
-                { label: "Wholesale", href: "/wholesale" },
+                { label: "Shop All", href: "/store" },
+                { label: "My Account", href: "/account" },
                 { label: "GitHub", href: "https://github.com/medusajs/b2b-starter-medusa", external: true },
-                { label: "Documentation", href: "https://docs.medusajs.com", external: true },
+                { label: "Powered by Medusa", href: "https://medusajs.com", external: true },
               ].map((item) => (
                 <li key={item.href}>
                   {item.external ? (
