@@ -101,10 +101,10 @@ success "Migrations done"
 
 # ── step 3: seed (only on first boot or --reset) ──────────────────────────────
 # Check if DB already has regions as a proxy for "already seeded"
-REGION_COUNT=$(docker exec medusa_postgres psql -U postgres -d medusa-store -tAc "SELECT COUNT(*) FROM region;" 2>/dev/null || echo "0")
-REGION_COUNT=$(echo "${REGION_COUNT}" | tr -d '[:space:]')
+SILK_SEED_COUNT=$(docker exec medusa_postgres psql -U postgres -d medusa-store -tAc "SELECT COUNT(*) FROM product_collection WHERE handle='bestsellers';" 2>/dev/null || echo "0")
+SILK_SEED_COUNT=$(echo "${SILK_SEED_COUNT}" | tr -d '[:space:]')
 
-if [[ "${RESET}" == "true" ]] || [[ "${REGION_COUNT}" == "0" ]]; then
+if [[ "${RESET}" == "true" ]] || [[ "${SILK_SEED_COUNT}" == "0" ]]; then
   echo ""
   info "Step 3/4 — Seeding database (silk shop)"
   (cd "${BACKEND}" && yarn seed:silk 2>&1 | grep -E "info:|error:|warn:|Done" | tail -10) || {
@@ -114,7 +114,7 @@ if [[ "${RESET}" == "true" ]] || [[ "${REGION_COUNT}" == "0" ]]; then
   (cd "${BACKEND}" && yarn medusa user --email admin@example.com --password supersecret 2>&1 | grep -E "info:|error:" | tail -3) || true
   success "Seed done — admin: admin@example.com / supersecret"
 else
-  info "Step 3/4 — Seed skipped (${REGION_COUNT} region(s) already in DB — use --reset to re-seed)"
+  info "Step 3/4 — Seed skipped (silk shop data already present — use --reset to re-seed)"
 fi
 
 # ── step 4: start processes ───────────────────────────────────────────────────

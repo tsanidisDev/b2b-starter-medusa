@@ -20,6 +20,11 @@ import {
   IFulfillmentModuleService,
   ISalesChannelModuleService,
   IStoreModuleService,
+  IRegionModuleService,
+  IProductModuleService,
+  ICustomerModuleService,
+  IApiKeyModuleService,
+  ITaxModuleService,
 } from "@medusajs/framework/types";
 import {
   ContainerRegistrationKeys,
@@ -108,78 +113,116 @@ export default async function seedSilkShop({ container }: ExecArgs) {
 
   const euCountries = ["de", "fr", "it", "es", "nl", "at", "be", "pt", "ie", "fi", "se", "dk", "pl"];
 
-  const { result: regionResult } = await createRegionsWorkflow(container).run({
-    input: {
-      regions: [
-        {
-          name: "Greece",
-          currency_code: "eur",
-          countries: ["gr"],
-          payment_providers: ["pp_system_default"],
-        },
-        {
-          name: "European Union",
-          currency_code: "eur",
-          countries: euCountries,
-          payment_providers: ["pp_system_default"],
-        },
-        {
-          name: "Cyprus",
-          currency_code: "eur",
-          countries: ["cy"],
-          payment_providers: ["pp_system_default"],
-        },
-        {
-          name: "United States",
-          currency_code: "usd",
-          countries: ["us"],
-          payment_providers: ["pp_system_default"],
-        },
-        {
-          name: "United Kingdom",
-          currency_code: "gbp",
-          countries: ["gb"],
-          payment_providers: ["pp_system_default"],
-        },
-      ],
-    },
-  });
+  // Idempotent: look up existing regions and only create missing ones,
+  // filtering out any countries already assigned to another region.
+  const regionModuleService: IRegionModuleService = container.resolve(
+    ModuleRegistrationName.REGION
+  );
+  const allExistingRegions = await regionModuleService.listRegions({});
+  const existingRegionsByName = new Map(allExistingRegions.map((r) => [r.name, r]));
 
-  const greeceRegion = regionResult[0];
+  // Build a set of country codes already assigned across ALL existing regions
+  const allRegionsWithCountries = await regionModuleService.listRegions(
+    {},
+    { relations: ["countries"] }
+  );
+  const assignedCountryCodes = new Set<string>(
+    allRegionsWithCountries.flatMap((r) =>
+      (r.countries ?? []).map((c: { iso_2: string }) => c.iso_2)
+    )
+  );
+
+  const desiredRegions = [
+    { name: "Greece",          currency_code: "eur", countries: ["gr"] },
+    { name: "European Union",  currency_code: "eur", countries: euCountries },
+    { name: "Cyprus",          currency_code: "eur", countries: ["cy"] },
+    { name: "United States",   currency_code: "usd", countries: ["us"] },
+    { name: "United Kingdom",  currency_code: "gbp", countries: ["gb"] },
+  ];
+
+  for (const regionDef of desiredRegions) {
+    if (existingRegionsByName.has(regionDef.name)) {
+      logger.info(`Region "${regionDef.name}" already exists — skipping.`);
+      continue;
+    }
+    const availableCountries = regionDef.countries.filter(
+      (c) => !assignedCountryCodes.has(c)
+    );
+    if (availableCountries.length === 0) {
+      logger.warn(
+        `Region "${regionDef.name}" has no unassigned countries — skipping.`
+      );
+      continue;
+    }
+    const { result } = await createRegionsWorkflow(container).run({
+      input: {
+        regions: [
+          {
+            ...regionDef,
+            countries: availableCountries,
+            payment_providers: ["pp_system_default"],
+          },
+        ],
+      },
+    });
+    existingRegionsByName.set(regionDef.name, result[0]);
+    availableCountries.forEach((c) => assignedCountryCodes.add(c));
+  }
+
+  // Prefer Greece; fall back to any EUR region if somehow absent
+  const greeceRegion =
+    existingRegionsByName.get("Greece") ??
+    [...existingRegionsByName.values()].find((r) => r.currency_code === "eur");
+
+  if (!greeceRegion) throw new Error("Could not resolve a EUR region for shipping prices");
+
   logger.info("Finished seeding regions.");
 
   // ── Tax regions ────────────────────────────────────────────────────────────
   logger.info("Creating tax regions...");
+  const taxModuleService: ITaxModuleService = container.resolve(
+    ModuleRegistrationName.TAX
+  );
+  const existingTaxRegions = await taxModuleService.listTaxRegions({});
+  const taxedCountries = new Set(existingTaxRegions.map((r) => r.country_code));
   const allCountries = ["gr", "cy", "us", "gb", ...euCountries];
-  await createTaxRegionsWorkflow(container).run({
-    input: allCountries.map((country_code) => ({ country_code })),
-  });
+  const countriesForTax = allCountries.filter((c) => !taxedCountries.has(c));
+  if (countriesForTax.length > 0) {
+    await createTaxRegionsWorkflow(container).run({
+      input: countriesForTax.map((country_code) => ({ country_code })),
+    });
+  }
   logger.info("Finished seeding tax regions.");
 
   // ── Stock location ─────────────────────────────────────────────────────────
   logger.info("Creating stock location...");
-  const { result: stockLocationResult } = await createStockLocationsWorkflow(
-    container
-  ).run({
-    input: {
-      locations: [
-        {
-          name: "Athens Warehouse",
-          address: {
-            city: "Athens",
-            country_code: "GR",
-            address_1: "",
+  const stockLocationMod = container.resolve(ModuleRegistrationName.STOCK_LOCATION);
+  const existingLocations = await stockLocationMod.listStockLocations({ name: "Athens Warehouse" });
+  let stockLocation: { id: string };
+  if (existingLocations.length > 0) {
+    stockLocation = existingLocations[0];
+    logger.info("Stock location \"Athens Warehouse\" already exists — skipping.");
+  } else {
+    const { result: stockLocationResult } = await createStockLocationsWorkflow(container).run({
+      input: {
+        locations: [
+          {
+            name: "Athens Warehouse",
+            address: { city: "Athens", country_code: "GR", address_1: "" },
           },
-        },
-      ],
-    },
-  });
-  const stockLocation = stockLocationResult[0];
-
-  await link.create({
-    [Modules.STOCK_LOCATION]: { stock_location_id: stockLocation.id },
-    [Modules.FULFILLMENT]: { fulfillment_provider_id: "manual_manual" },
-  });
+        ],
+      },
+    });
+    stockLocation = stockLocationResult[0];
+    try {
+      await link.create({
+        [Modules.STOCK_LOCATION]: { stock_location_id: stockLocation.id },
+        [Modules.FULFILLMENT]: { fulfillment_provider_id: "manual_manual" },
+      });
+    } catch {
+      logger.warn("Stock location ↔ fulfillment provider link may already exist.");
+    }
+  }
 
   // ── Shipping ───────────────────────────────────────────────────────────────
   logger.info("Creating shipping...");
@@ -194,170 +237,242 @@ export default async function seedSilkShop({ container }: ExecArgs) {
           })
         ).result[0];
 
-  const fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
-    name: "Greece & EU Shipping",
-    type: "shipping",
-    service_zones: [
-      {
-        name: "Greece & EU",
-        geo_zones: allCountries.map((country_code) => ({
-          country_code,
-          type: "country" as const,
-        })),
-      },
-    ],
-  });
+  const fulfillmentSets = await fulfillmentModuleService.listFulfillmentSets(
+    { name: "Greece & EU Shipping" },
+    { relations: ["service_zones"] }
+  );
+  let serviceZoneId: string;
+  if (fulfillmentSets.length > 0) {
+    logger.info("Fulfillment set \"Greece & EU Shipping\" already exists — skipping.");
+    serviceZoneId = fulfillmentSets[0].service_zones[0]?.id ?? "";
+  } else {
+    const fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
+      name: "Greece & EU Shipping",
+      type: "shipping",
+      service_zones: [
+        {
+          name: "Greece & EU",
+          geo_zones: allCountries.map((country_code) => ({
+            country_code,
+            type: "country" as const,
+          })),
+        },
+      ],
+    });
+    serviceZoneId = fulfillmentSet.service_zones[0].id;
+    await link.create({
+      [Modules.STOCK_LOCATION]: { stock_location_id: stockLocation.id },
+      [Modules.FULFILLMENT]: { fulfillment_set_id: fulfillmentSet.id },
+    });
+  }
 
-  await link.create({
-    [Modules.STOCK_LOCATION]: { stock_location_id: stockLocation.id },
-    [Modules.FULFILLMENT]: { fulfillment_set_id: fulfillmentSet.id },
-  });
+  const existingShippingOptions = await fulfillmentModuleService.listShippingOptions({});
+  const shippingOptionNames = new Set(existingShippingOptions.map((o) => o.name));
+  const shippingOptionsToCreate = [
+    {
+      name: "Standard Shipping (5-7 days)",
+      price_type: "flat" as const,
+      provider_id: "manual_manual",
+      service_zone_id: serviceZoneId,
+      shipping_profile_id: shippingProfile.id,
+      type: { label: "Standard", description: "5-7 business days", code: "standard" },
+      prices: [
+        { currency_code: "eur", amount: 500 },
+        { region_id: greeceRegion.id, amount: 300 },
+      ],
+      rules: [
+        { attribute: "enabled_in_store", value: '"true"', operator: "eq" as const },
+        { attribute: "is_return", value: "false", operator: "eq" as const },
+      ],
+    },
+    {
+      name: "Express Shipping (1-3 days)",
+      price_type: "flat" as const,
+      provider_id: "manual_manual",
+      service_zone_id: serviceZoneId,
+      shipping_profile_id: shippingProfile.id,
+      type: { label: "Express", description: "1-3 business days", code: "express" },
+      prices: [
+        { currency_code: "eur", amount: 1200 },
+        { region_id: greeceRegion.id, amount: 800 },
+      ],
+      rules: [
+        { attribute: "enabled_in_store", value: '"true"', operator: "eq" as const },
+        { attribute: "is_return", value: "false", operator: "eq" as const },
+      ],
+    },
+  ].filter((opt) => !shippingOptionNames.has(opt.name));
 
-  const serviceZoneId = fulfillmentSet.service_zones[0].id;
-
-  await createShippingOptionsWorkflow(container).run({
-    input: [
-      {
-        name: "Standard Shipping (5-7 days)",
-        price_type: "flat",
-        provider_id: "manual_manual",
-        service_zone_id: serviceZoneId,
-        shipping_profile_id: shippingProfile.id,
-        type: { label: "Standard", description: "5-7 business days", code: "standard" },
-        prices: [
-          { currency_code: "eur", amount: 500 },
-          { region_id: greeceRegion.id, amount: 300 },
-        ],
-        rules: [
-          { attribute: "enabled_in_store", value: '"true"', operator: "eq" },
-          { attribute: "is_return", value: "false", operator: "eq" },
-        ],
-      },
-      {
-        name: "Express Shipping (1-3 days)",
-        price_type: "flat",
-        provider_id: "manual_manual",
-        service_zone_id: serviceZoneId,
-        shipping_profile_id: shippingProfile.id,
-        type: { label: "Express", description: "1-3 business days", code: "express" },
-        prices: [
-          { currency_code: "eur", amount: 1200 },
-          { region_id: greeceRegion.id, amount: 800 },
-        ],
-        rules: [
-          { attribute: "enabled_in_store", value: '"true"', operator: "eq" },
-          { attribute: "is_return", value: "false", operator: "eq" },
-        ],
-      },
-    ],
-  });
+  if (shippingOptionsToCreate.length > 0) {
+    await createShippingOptionsWorkflow(container).run({
+      input: shippingOptionsToCreate,
+    });
+  }
   logger.info("Finished seeding shipping.");
 
-  // Link both channels to stock location
-  await linkSalesChannelsToStockLocationWorkflow(container).run({
-    input: { id: stockLocation.id, add: [b2cChannel.id, b2bChannel.id] },
-  });
+  // Link both channels to stock location (idempotent — fails silently if already linked)
+  try {
+    await linkSalesChannelsToStockLocationWorkflow(container).run({
+      input: { id: stockLocation.id, add: [b2cChannel.id, b2bChannel.id] },
+    });
+  } catch {
+    logger.warn("Sales channel ↔ stock location link may already exist — skipping.");
+  }
 
   // ── Publishable API keys ───────────────────────────────────────────────────
   logger.info("Creating publishable API keys...");
-  const { result: apiKeyResult } = await createApiKeysWorkflow(container).run({
-    input: {
-      api_keys: [
-        { title: "B2C Storefront", type: "publishable", created_by: "" },
-        { title: "B2B Wholesale", type: "publishable", created_by: "" },
-      ],
-    },
-  });
-  const [b2cKey, b2bKey] = apiKeyResult;
+  const apiKeyModuleService: IApiKeyModuleService = container.resolve(
+    ModuleRegistrationName.API_KEY
+  );
+  const allApiKeys = await apiKeyModuleService.listApiKeys({});
+  const keysByTitle = new Map(allApiKeys.map((k) => [k.title, k]));
 
-  await linkSalesChannelsToApiKeyWorkflow(container).run({
-    input: { id: b2cKey.id, add: [b2cChannel.id] },
-  });
-  await linkSalesChannelsToApiKeyWorkflow(container).run({
-    input: { id: b2bKey.id, add: [b2bChannel.id] },
-  });
+  const keysToCreate = [
+    { title: "B2C Storefront", type: "publishable" as const, created_by: "" },
+    { title: "B2B Wholesale",  type: "publishable" as const, created_by: "" },
+  ].filter((k) => !keysByTitle.has(k.title));
+
+  if (keysToCreate.length > 0) {
+    const { result } = await createApiKeysWorkflow(container).run({
+      input: { api_keys: keysToCreate },
+    });
+    result.forEach((k) => keysByTitle.set(k.title, k));
+  }
+
+  const b2cKey = keysByTitle.get("B2C Storefront")!;
+  const b2bKey = keysByTitle.get("B2B Wholesale")!;
+  if (!b2cKey || !b2bKey) throw new Error("Failed to resolve publishable API keys");
+
+  try {
+    await linkSalesChannelsToApiKeyWorkflow(container).run({
+      input: { id: b2cKey.id, add: [b2cChannel.id] },
+    });
+  } catch { logger.warn("B2C key <-> channel link may already exist."); }
+  try {
+    await linkSalesChannelsToApiKeyWorkflow(container).run({
+      input: { id: b2bKey.id, add: [b2bChannel.id] },
+    });
+  } catch { logger.warn("B2B key <-> channel link may already exist."); }
 
   logger.info(`B2C publishable key: ${b2cKey.token}`);
   logger.info(`B2B publishable key: ${b2bKey.token}`);
 
   // ── Collections ────────────────────────────────────────────────────────────
   logger.info("Creating collections...");
-  const { result: collectionsResult } = await createCollectionsWorkflow(
-    container
-  ).run({
-    input: {
-      collections: [
-        { title: "New Arrivals", handle: "new-arrivals" },
-        { title: "Bestsellers", handle: "bestsellers" },
-        { title: "Luxury Collection", handle: "luxury-collection" },
-        { title: "Wedding & Bridal", handle: "wedding-bridal" },
-        { title: "Summer Edit", handle: "summer-edit" },
-        { title: "Men's Silk", handle: "mens-silk" },
-      ],
-    },
-  });
-  const [newArrivals, bestsellers, luxuryCollection, weddingBridal, summerEdit, mensSilk] =
-    collectionsResult;
+  const productModuleService: IProductModuleService = container.resolve(
+    ModuleRegistrationName.PRODUCT
+  );
+  const existingCollections = await productModuleService.listProductCollections({});
+  const collectionsByHandle = new Map(existingCollections.map((c) => [c.handle, c]));
+
+  const collectionsToCreate = [
+    { title: "New Arrivals",      handle: "new-arrivals" },
+    { title: "Bestsellers",       handle: "bestsellers" },
+    { title: "Luxury Collection", handle: "luxury-collection" },
+    { title: "Wedding & Bridal",  handle: "wedding-bridal" },
+    { title: "Summer Edit",       handle: "summer-edit" },
+    { title: "Men's Silk",        handle: "mens-silk" },
+  ].filter((c) => !collectionsByHandle.has(c.handle));
+
+  if (collectionsToCreate.length > 0) {
+    const { result } = await createCollectionsWorkflow(container).run({
+      input: { collections: collectionsToCreate },
+    });
+    result.forEach((c) => collectionsByHandle.set(c.handle!, c));
+  }
+
+  const newArrivals      = collectionsByHandle.get("new-arrivals")!;
+  const bestsellers      = collectionsByHandle.get("bestsellers")!;
+  const luxuryCollection = collectionsByHandle.get("luxury-collection")!;
+  const weddingBridal    = collectionsByHandle.get("wedding-bridal")!;
+  const summerEdit       = collectionsByHandle.get("summer-edit")!;
+  const mensSilk         = collectionsByHandle.get("mens-silk")!;
 
   // ── Categories ─────────────────────────────────────────────────────────────
   logger.info("Creating product categories...");
-  const { result: topCategories } = await createProductCategoriesWorkflow(
-    container
-  ).run({
-    input: {
-      product_categories: [
-        { name: "Scarves & Shawls", handle: "scarves-shawls", is_active: true, rank: 0 },
-        { name: "Clothing", handle: "clothing", is_active: true, rank: 1 },
-        { name: "Home & Living", handle: "home-living", is_active: true, rank: 2 },
-        { name: "Accessories", handle: "accessories", is_active: true, rank: 3 },
-        { name: "Gifts & Sets", handle: "gifts-sets", is_active: true, rank: 4 },
-      ],
-    },
-  });
-  const [scarvesCategory, clothingCategory, homeCategory, accessoriesCategory, giftsCategory] = topCategories;
+  const existingCategories = await productModuleService.listProductCategories(
+    {},
+    { select: ["id", "handle", "parent_category_id"] }
+  );
+  const categoriesByHandle = new Map(existingCategories.map((c) => [c.handle, c]));
+
+  const topLevelCategoryDefs = [
+    { name: "Scarves & Shawls", handle: "scarves-shawls", is_active: true, rank: 0 },
+    { name: "Clothing",         handle: "clothing",       is_active: true, rank: 1 },
+    { name: "Home & Living",    handle: "home-living",    is_active: true, rank: 2 },
+    { name: "Accessories",      handle: "accessories",    is_active: true, rank: 3 },
+    { name: "Gifts & Sets",     handle: "gifts-sets",     is_active: true, rank: 4 },
+  ];
+  const missingTopLevel = topLevelCategoryDefs.filter(
+    (c) => !categoriesByHandle.has(c.handle)
+  );
+  if (missingTopLevel.length > 0) {
+    const { result } = await createProductCategoriesWorkflow(container).run({
+      input: { product_categories: missingTopLevel },
+    });
+    result.forEach((c) => categoriesByHandle.set(c.handle!, c));
+  }
+
+  const scarvesCategory     = categoriesByHandle.get("scarves-shawls")!;
+  const clothingCategory    = categoriesByHandle.get("clothing")!;
+  const homeCategory        = categoriesByHandle.get("home-living")!;
+  const accessoriesCategory = categoriesByHandle.get("accessories")!;
+  const giftsCategory       = categoriesByHandle.get("gifts-sets")!;
 
   // Sub-categories
-  const { result: subCategories } = await createProductCategoriesWorkflow(container).run({
-    input: {
-      product_categories: [
-        // Scarves sub-categories
-        { name: "Square Scarves", handle: "square-scarves", is_active: true, parent_category_id: scarvesCategory.id, rank: 0 },
-        { name: "Long Scarves", handle: "long-scarves", is_active: true, parent_category_id: scarvesCategory.id, rank: 1 },
-        { name: "Shawls & Wraps", handle: "shawls-wraps", is_active: true, parent_category_id: scarvesCategory.id, rank: 2 },
-        // Clothing sub-categories
-        { name: "Dresses", handle: "dresses", is_active: true, parent_category_id: clothingCategory.id, rank: 0 },
-        { name: "Blouses & Tops", handle: "blouses-tops", is_active: true, parent_category_id: clothingCategory.id, rank: 1 },
-        { name: "Robes & Loungewear", handle: "robes-loungewear", is_active: true, parent_category_id: clothingCategory.id, rank: 2 },
-        // Home sub-categories
-        { name: "Pillowcases", handle: "pillowcases", is_active: true, parent_category_id: homeCategory.id, rank: 0 },
-        { name: "Throws & Blankets", handle: "throws-blankets", is_active: true, parent_category_id: homeCategory.id, rank: 1 },
-        { name: "Table Linens", handle: "table-linens", is_active: true, parent_category_id: homeCategory.id, rank: 2 },
-        // Accessories sub-categories
-        { name: "Ties & Pocket Squares", handle: "ties-pocket-squares", is_active: true, parent_category_id: accessoriesCategory.id, rank: 0 },
-        { name: "Hair Accessories", handle: "hair-accessories", is_active: true, parent_category_id: accessoriesCategory.id, rank: 1 },
-        { name: "Eye Masks", handle: "eye-masks", is_active: true, parent_category_id: accessoriesCategory.id, rank: 2 },
-        // Gifts sub-categories
-        { name: "Bridal", handle: "bridal", is_active: true, parent_category_id: giftsCategory.id, rank: 0 },
-        { name: "Corporate Gifts", handle: "corporate-gifts", is_active: true, parent_category_id: giftsCategory.id, rank: 1 },
-      ],
-    },
-  });
-  const [
-    squareScarves, longScarves, shawlsWraps,
-    dresses, blousesTops, robesLoungewear,
-    pillowcases, throwsBlankets, tableLinens,
-    tiesPocketSquares, hairAccessories, eyeMasks,
-    bridal, corporateGifts,
-  ] = subCategories;
+  const subCategoryDefs = [
+    // Scarves
+    { name: "Square Scarves",       handle: "square-scarves",       is_active: true, parent_category_id: scarvesCategory.id,     rank: 0 },
+    { name: "Long Scarves",         handle: "long-scarves",         is_active: true, parent_category_id: scarvesCategory.id,     rank: 1 },
+    { name: "Shawls & Wraps",       handle: "shawls-wraps",         is_active: true, parent_category_id: scarvesCategory.id,     rank: 2 },
+    // Clothing
+    { name: "Dresses",              handle: "dresses",              is_active: true, parent_category_id: clothingCategory.id,    rank: 0 },
+    { name: "Blouses & Tops",       handle: "blouses-tops",         is_active: true, parent_category_id: clothingCategory.id,    rank: 1 },
+    { name: "Robes & Loungewear",   handle: "robes-loungewear",     is_active: true, parent_category_id: clothingCategory.id,    rank: 2 },
+    // Home
+    { name: "Pillowcases",          handle: "pillowcases",          is_active: true, parent_category_id: homeCategory.id,        rank: 0 },
+    { name: "Throws & Blankets",    handle: "throws-blankets",      is_active: true, parent_category_id: homeCategory.id,        rank: 1 },
+    { name: "Table Linens",         handle: "table-linens",         is_active: true, parent_category_id: homeCategory.id,        rank: 2 },
+    // Accessories
+    { name: "Ties & Pocket Squares", handle: "ties-pocket-squares", is_active: true, parent_category_id: accessoriesCategory.id, rank: 0 },
+    { name: "Hair Accessories",     handle: "hair-accessories",     is_active: true, parent_category_id: accessoriesCategory.id, rank: 1 },
+    { name: "Eye Masks",            handle: "eye-masks",            is_active: true, parent_category_id: accessoriesCategory.id, rank: 2 },
+    // Gifts
+    { name: "Bridal",               handle: "bridal",               is_active: true, parent_category_id: giftsCategory.id,       rank: 0 },
+    { name: "Corporate Gifts",      handle: "corporate-gifts",      is_active: true, parent_category_id: giftsCategory.id,       rank: 1 },
+  ];
+  const missingSubCats = subCategoryDefs.filter((c) => !categoriesByHandle.has(c.handle));
+  if (missingSubCats.length > 0) {
+    const { result } = await createProductCategoriesWorkflow(container).run({
+      input: { product_categories: missingSubCats },
+    });
+    result.forEach((c) => categoriesByHandle.set(c.handle!, c));
+  }
+
+  const squareScarves    = categoriesByHandle.get("square-scarves")!;
+  const longScarves      = categoriesByHandle.get("long-scarves")!;
+  const shawlsWraps      = categoriesByHandle.get("shawls-wraps")!;
+  const dresses          = categoriesByHandle.get("dresses")!;
+  const blousesTops      = categoriesByHandle.get("blouses-tops")!;
+  const robesLoungewear  = categoriesByHandle.get("robes-loungewear")!;
+  const pillowcases      = categoriesByHandle.get("pillowcases")!;
+  const throwsBlankets   = categoriesByHandle.get("throws-blankets")!;
+  const tableLinens      = categoriesByHandle.get("table-linens")!;
+  const tiesPocketSquares = categoriesByHandle.get("ties-pocket-squares")!;
+  const hairAccessories  = categoriesByHandle.get("hair-accessories")!;
+  const eyeMasks         = categoriesByHandle.get("eye-masks")!;
+  const bridal           = categoriesByHandle.get("bridal")!;
+  const corporateGifts   = categoriesByHandle.get("corporate-gifts")!;
 
   // ── Products ───────────────────────────────────────────────────────────────
   logger.info("Creating products...");
 
   const channelIds = [{ id: b2cChannel.id }, { id: b2bChannel.id }];
 
-  await createProductsWorkflow(container).run({
-    input: {
-      products: [
+  const existingProductList = await productModuleService.listProducts({}, { select: ["handle"] });
+  const existingHandles = new Set(existingProductList.map((p) => p.handle));
+
+  const allSilkProducts = [
         // ── Scarves & Shawls ─────────────────────────────────────────────
         {
           title: 'Silk Scarf "Aegean Blue"',
@@ -836,135 +951,180 @@ export default async function seedSilkShop({ container }: ExecArgs) {
           variants: [
           ],
         },
-      ],
-    },
-  });
+  ];
+
+  const productsToCreate = allSilkProducts.filter(
+    (p) => !existingHandles.has(p.handle as string)
+  );
+  if (productsToCreate.length > 0) {
+    logger.info(`Creating ${productsToCreate.length} new product(s)...`);
+    await createProductsWorkflow(container).run({
+      input: { products: productsToCreate },
+    });
+  } else {
+    logger.info("All products already exist — skipping.");
+  }
 
   logger.info("Finished seeding products.");
 
   // ── Customer Groups ────────────────────────────────────────────────────────
   logger.info("Creating customer groups...");
-  const { result: customerGroupResult } = await createCustomerGroupsWorkflow(container).run({
-    input: {
-      customersData: [
-        { name: "B2B Wholesale" },
-        { name: "VIP Retail" },
-        { name: "Bridal Trade" },
-      ],
-    },
-  });
-  const [b2bGroup, vipGroup, bridalGroup] = customerGroupResult;
+  const customerModuleService: ICustomerModuleService = container.resolve(
+    ModuleRegistrationName.CUSTOMER
+  );
+  const existingGroups = await customerModuleService.listCustomerGroups({});
+  const groupsByName = new Map(existingGroups.map((g) => [g.name, g]));
+
+  const groupsToCreate = [
+    { name: "B2B Wholesale" },
+    { name: "VIP Retail" },
+    { name: "Bridal Trade" },
+  ].filter((g) => !groupsByName.has(g.name));
+
+  if (groupsToCreate.length > 0) {
+    const { result } = await createCustomerGroupsWorkflow(container).run({
+      input: { customersData: groupsToCreate },
+    });
+    result.forEach((g) => groupsByName.set(g.name, g));
+  }
+
+  const b2bGroup    = groupsByName.get("B2B Wholesale")!;
+  const vipGroup    = groupsByName.get("VIP Retail")!;
+  const bridalGroup = groupsByName.get("Bridal Trade")!;
 
   // ── Demo B2B Customers ─────────────────────────────────────────────────────
   logger.info("Creating demo B2B customers...");
-  const { result: customersResult } = await createCustomersWorkflow(container).run({
-    input: {
-      customersData: [
-        {
-          email: "buyer@athens-luxury-hotels.gr",
-          first_name: "Nikos",
-          last_name: "Papadopoulos",
-          phone: "+30 210 123 4567",
-          company_name: "Athens Luxury Hotels Group",
-        },
-        {
-          email: "owner@mediterranean-bridal.gr",
-          first_name: "Maria",
-          last_name: "Stavros",
-          phone: "+30 210 987 6543",
-          company_name: "Mediterranean Bridal Studio",
-        },
-        {
-          email: "procurement@hellas-corporate.com",
-          first_name: "Alexandros",
-          last_name: "Georgiou",
-          phone: "+30 211 234 5678",
-          company_name: "Hellas Corporate Gifts",
-        },
-        {
-          email: "demo@b2c-customer.com",
-          first_name: "Elena",
-          last_name: "Christodoulou",
-          phone: "+30 697 123 4567",
-        },
-      ],
+  const existingCustomers = await customerModuleService.listCustomers({});
+  const customersByEmail = new Map(existingCustomers.map((c) => [c.email, c]));
+
+  const customerDefs = [
+    {
+      email: "buyer@athens-luxury-hotels.gr",
+      first_name: "Nikos",
+      last_name: "Papadopoulos",
+      phone: "+30 210 123 4567",
+      company_name: "Athens Luxury Hotels Group",
     },
-  });
-  const [hotelBuyer, bridalBuyer, corporateBuyer, retailCustomer] = customersResult;
+    {
+      email: "owner@mediterranean-bridal.gr",
+      first_name: "Maria",
+      last_name: "Stavros",
+      phone: "+30 210 987 6543",
+      company_name: "Mediterranean Bridal Studio",
+    },
+    {
+      email: "procurement@hellas-corporate.com",
+      first_name: "Alexandros",
+      last_name: "Georgiou",
+      phone: "+30 211 234 5678",
+      company_name: "Hellas Corporate Gifts",
+    },
+    {
+      email: "demo@b2c-customer.com",
+      first_name: "Elena",
+      last_name: "Christodoulou",
+      phone: "+30 697 123 4567",
+    },
+  ];
+  const customersToCreate = customerDefs.filter((c) => !customersByEmail.has(c.email));
+  if (customersToCreate.length > 0) {
+    const { result } = await createCustomersWorkflow(container).run({
+      input: { customersData: customersToCreate },
+    });
+    result.forEach((c) => customersByEmail.set(c.email!, c));
+  }
+
+  const hotelBuyer     = customersByEmail.get("buyer@athens-luxury-hotels.gr")!;
+  const bridalBuyer    = customersByEmail.get("owner@mediterranean-bridal.gr")!;
+  const corporateBuyer = customersByEmail.get("procurement@hellas-corporate.com")!;
+  const retailCustomer = customersByEmail.get("demo@b2c-customer.com")!;
 
   // ── B2B Companies ──────────────────────────────────────────────────────────
   logger.info("Creating B2B companies...");
-  const { result: companiesResult } = await createCompaniesWorkflow(container).run({
-    input: [
-      {
-        name: "Athens Luxury Hotels Group",
-        email: "procurement@athens-luxury-hotels.gr",
-        phone: "+30 210 123 4567",
-        address: "Leoforos Vassilissis Sofias 15",
-        city: "Athens",
-        state: "Attica",
-        zip: "10674",
-        country: "GR",
-        currency_code: "eur",
-        spending_limit_reset_frequency: ModuleCompanySpendingLimitResetFrequency.MONTHLY,
-        logo_url: null,
-      },
-      {
-        name: "Mediterranean Bridal Studio",
-        email: "info@mediterranean-bridal.gr",
-        phone: "+30 210 987 6543",
-        address: "Tsimiski 42",
-        city: "Thessaloniki",
-        state: "Central Macedonia",
-        zip: "54623",
-        country: "GR",
-        currency_code: "eur",
-        spending_limit_reset_frequency: ModuleCompanySpendingLimitResetFrequency.MONTHLY,
-        logo_url: null,
-      },
-      {
-        name: "Hellas Corporate Gifts",
-        email: "orders@hellas-corporate.com",
-        phone: "+30 211 234 5678",
-        address: "Ermou 25",
-        city: "Athens",
-        state: "Attica",
-        zip: "10563",
-        country: "GR",
-        currency_code: "eur",
-        spending_limit_reset_frequency: ModuleCompanySpendingLimitResetFrequency.YEARLY,
-        logo_url: null,
-      },
-    ],
-  });
+  const companyModuleService = container.resolve(COMPANY_MODULE);
+  const existingCompanies = await companyModuleService.listCompanies({});
+  const companiesByName = new Map(
+    (existingCompanies as Array<{ name: string; id: string }>).map((c) => [c.name, c])
+  );
 
-  logger.info(`Created ${companiesResult.length} B2B companies.`);
+  const companyDefs = [
+    {
+      name: "Athens Luxury Hotels Group",
+      email: "procurement@athens-luxury-hotels.gr",
+      phone: "+30 210 123 4567",
+      address: "Leoforos Vassilissis Sofias 15",
+      city: "Athens",
+      state: "Attica",
+      zip: "10674",
+      country: "GR",
+      currency_code: "eur",
+      spending_limit_reset_frequency: ModuleCompanySpendingLimitResetFrequency.MONTHLY,
+      logo_url: null,
+    },
+    {
+      name: "Mediterranean Bridal Studio",
+      email: "info@mediterranean-bridal.gr",
+      phone: "+30 210 987 6543",
+      address: "Tsimiski 42",
+      city: "Thessaloniki",
+      state: "Central Macedonia",
+      zip: "54623",
+      country: "GR",
+      currency_code: "eur",
+      spending_limit_reset_frequency: ModuleCompanySpendingLimitResetFrequency.MONTHLY,
+      logo_url: null,
+    },
+    {
+      name: "Hellas Corporate Gifts",
+      email: "orders@hellas-corporate.com",
+      phone: "+30 211 234 5678",
+      address: "Ermou 25",
+      city: "Athens",
+      state: "Attica",
+      zip: "10563",
+      country: "GR",
+      currency_code: "eur",
+      spending_limit_reset_frequency: ModuleCompanySpendingLimitResetFrequency.YEARLY,
+      logo_url: null,
+    },
+  ];
+
+  const companiesToCreate = companyDefs.filter((c) => !companiesByName.has(c.name));
+  if (companiesToCreate.length > 0) {
+    const { result } = await createCompaniesWorkflow(container).run({
+      input: companiesToCreate,
+    });
+    (result as Array<{ name: string; id: string }>).forEach((c) =>
+      companiesByName.set(c.name, c)
+    );
+  }
+
+  logger.info(`Seeded ${companyDefs.length} B2B companies.`);
 
   // ── Company Employees ──────────────────────────────────────────────────────
   logger.info("Creating company employees...");
-  const companyModuleService = container.resolve(COMPANY_MODULE);
-  const [hotelCompany, bridalCompany, corporateCompany] = companiesResult;
+  const hotelCompany     = companiesByName.get("Athens Luxury Hotels Group")!;
+  const bridalCompany    = companiesByName.get("Mediterranean Bridal Studio")!;
+  const corporateCompany = companiesByName.get("Hellas Corporate Gifts")!;
 
-  await companyModuleService.createEmployees([
-    {
-      company_id: hotelCompany.id,
-      customer_id: hotelBuyer.id,
-      spending_limit: 500000,
-      is_admin: true,
-    },
-    {
-      company_id: bridalCompany.id,
-      customer_id: bridalBuyer.id,
-      spending_limit: 300000,
-      is_admin: true,
-    },
-    {
-      company_id: corporateCompany.id,
-      customer_id: corporateBuyer.id,
-      spending_limit: 1000000,
-      is_admin: true,
-    },
-  ]);
+  const existingEmployees = await companyModuleService.listEmployees({
+    company_id: [hotelCompany.id, bridalCompany.id, corporateCompany.id],
+  });
+  const companyIdsWithEmployees = new Set(
+    (existingEmployees as Array<{ company_id: string }>).map((e) => e.company_id)
+  );
+
+  const employeeDefs = [
+    { company_id: hotelCompany.id,     customer_id: hotelBuyer.id,     spending_limit: 500000,  is_admin: true },
+    { company_id: bridalCompany.id,    customer_id: bridalBuyer.id,    spending_limit: 300000,  is_admin: true },
+    { company_id: corporateCompany.id, customer_id: corporateBuyer.id, spending_limit: 1000000, is_admin: true },
+  ];
+  const employeesToCreate = employeeDefs.filter(
+    (e) => !companyIdsWithEmployees.has(e.company_id)
+  );
+  if (employeesToCreate.length > 0) {
+    await companyModuleService.createEmployees(employeesToCreate);
+  }
 
   logger.info("Finished seeding B2B companies, employees and customer groups.");
 
