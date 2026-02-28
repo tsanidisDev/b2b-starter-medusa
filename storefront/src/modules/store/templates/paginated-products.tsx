@@ -90,13 +90,13 @@ export default async function PaginatedProducts({
       </p>
 
       <ul
-        className={`grid w-full gap-4 ${gridClass}`}
+        className={`grid w-full ${view === "list" ? "gap-1.5" : "gap-4"} ${gridClass}`}
         data-testid="products-list"
       >
         {products.length > 0 ? (
           products.map((p) => (
             <li key={p.id}>
-              <ProductPreview product={p} region={region} />
+              <ProductPreview product={p} region={region} view={view} />
             </li>
           ))
         ) : (

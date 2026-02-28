@@ -40,7 +40,7 @@ export async function NavigationHeader() {
           <span className="text-base small:text-lg font-semibold tracking-wide text-foreground">
             Hellas Silk
           </span>
-          <span className="hidden small:inline text-xs text-muted-foreground tracking-widest uppercase">
+          <span className="hidden small:inline text-xs text-foreground/50 tracking-widest uppercase">
             Athens
           </span>
         </LocalizedClientLink>
@@ -52,13 +52,13 @@ export async function NavigationHeader() {
           </Suspense>
           <LocalizedClientLink
             href="/store"
-            className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
+            className="px-3 py-2 text-sm text-foreground/80 hover:text-foreground hover:bg-accent rounded-md transition-colors"
           >
             Store
           </LocalizedClientLink>
           <LocalizedClientLink
             href="/about"
-            className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
+            className="px-3 py-2 text-sm text-foreground/80 hover:text-foreground hover:bg-accent rounded-md transition-colors"
           >
             About
           </LocalizedClientLink>
@@ -78,14 +78,14 @@ export async function NavigationHeader() {
           <div className="hidden small:flex">
             {customer && cart?.items && cart.items.length > 0 ? (
               <RequestQuoteConfirmation>
-                <button className="flex items-center gap-1 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+                <button className="flex items-center gap-1 rounded-md px-2 py-1.5 text-sm text-foreground/80 hover:text-foreground hover:bg-accent transition-colors">
                   <FilePlus />
                   <span className="hidden small:inline">Quote</span>
                 </button>
               </RequestQuoteConfirmation>
             ) : (
               <RequestQuotePrompt>
-                <button className="flex items-center gap-1 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+                <button className="flex items-center gap-1 rounded-md px-2 py-1.5 text-sm text-foreground/80 hover:text-foreground hover:bg-accent transition-colors">
                   <FilePlus />
                   <span className="hidden small:inline">Quote</span>
                 </button>

@@ -44,7 +44,8 @@ export default function StoreToolbar({
       data-testid={dataTestId}
     >
       {/* Grid / List toggle */}
-      <div className="flex items-center gap-0.5">
+      <div className="flex items-center gap-1.5">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground select-none pr-0.5">Columns</span>
         {GRID_VIEWS.map((g) => (
           <button
             key={g.value}
