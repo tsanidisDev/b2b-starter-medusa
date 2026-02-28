@@ -166,11 +166,16 @@ export default async function seedSilkShop({ container }: ExecArgs) {
 
   // ── Shipping ───────────────────────────────────────────────────────────────
   logger.info("Creating shipping...");
-  const { result: shippingProfileResult } =
-    await createShippingProfilesWorkflow(container).run({
-      input: { data: [{ name: "Default", type: "default" }] },
-    });
-  const shippingProfile = shippingProfileResult[0];
+  const existingProfiles =
+    await fulfillmentModuleService.listShippingProfiles({ name: "Default" });
+  const shippingProfile =
+    existingProfiles.length > 0
+      ? existingProfiles[0]
+      : (
+          await createShippingProfilesWorkflow(container).run({
+            input: { data: [{ name: "Default", type: "default" }] },
+          })
+        ).result[0];
 
   const fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
     name: "Greece & EU Shipping",

@@ -1,7 +1,12 @@
 import {
   ExecArgs,
+  IApiKeyModuleService,
+  IFulfillmentModuleService,
   IProductModuleService,
+  IRegionModuleService,
   ISalesChannelModuleService,
+  IStockLocationService,
+  ITaxModuleService,
 } from "@medusajs/framework/types";
 import {
   ContainerRegistrationKeys,
@@ -11,20 +16,41 @@ import {
 import { deleteProductsWorkflow } from "@medusajs/core-flows";
 
 /**
- * Removes all demo data (products, categories, collections, sales channels,
- * API keys) so the silk-shop seed can start with a clean slate.
+ * Removes all demo/seed data so the silk-shop seed can start with a clean
+ * slate. Cleans (in dependency order):
+ *   products → categories → collections
+ *   fulfillment sets (cascades shipping options/service zones/geo zones)
+ *   shipping profiles
+ *   stock locations
+ *   publishable API keys
+ *   tax regions → regions
+ *   non-default sales channels
  *
  * Run with: yarn medusa exec src/scripts/clean-seed-data.ts
  */
 export default async function cleanSeedData({ container }: ExecArgs) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
+  const query = container.resolve(ContainerRegistrationKeys.QUERY);
+
   const productModule: IProductModuleService = container.resolve(
     ModuleRegistrationName.PRODUCT
   );
+  const regionModule: IRegionModuleService = container.resolve(
+    ModuleRegistrationName.REGION
+  );
+  const taxModule: ITaxModuleService = container.resolve(Modules.TAX);
   const salesChannelModule: ISalesChannelModuleService = container.resolve(
     ModuleRegistrationName.SALES_CHANNEL
   );
-  const query = container.resolve(ContainerRegistrationKeys.QUERY);
+  const fulfillmentModule: IFulfillmentModuleService = container.resolve(
+    ModuleRegistrationName.FULFILLMENT
+  );
+  const stockLocationModule: IStockLocationService = container.resolve(
+    ModuleRegistrationName.STOCK_LOCATION
+  );
+  const apiKeyModule: IApiKeyModuleService = container.resolve(
+    ModuleRegistrationName.API_KEY
+  );
 
   // ── Products ──────────────────────────────────────────────────────────────
   logger.info("Deleting existing products...");
@@ -59,20 +85,81 @@ export default async function cleanSeedData({ container }: ExecArgs) {
     fields: ["id"],
   });
   if (collections.length) {
-    await productModule.deleteCollections(
+    await productModule.deleteProductCollections(
       collections.map((c: { id: string }) => c.id)
     );
     logger.info(`Deleted ${collections.length} collections.`);
   }
 
-  // ── Sales channels (except default) ──────────────────────────────────────
+  // ── Fulfillment sets (cascades shipping options, service zones, geo zones)
+  logger.info("Deleting existing fulfillment sets...");
+  const fulfillmentSets = await fulfillmentModule.listFulfillmentSets();
+  if (fulfillmentSets.length) {
+    await fulfillmentModule.deleteFulfillmentSets(
+      fulfillmentSets.map((f) => f.id)
+    );
+    logger.info(`Deleted ${fulfillmentSets.length} fulfillment sets.`);
+  }
+
+  // ── Shipping profiles ─────────────────────────────────────────────────────
+  logger.info("Deleting existing shipping profiles...");
+  const shippingProfiles = await fulfillmentModule.listShippingProfiles();
+  if (shippingProfiles.length) {
+    await fulfillmentModule.deleteShippingProfiles(
+      shippingProfiles.map((p) => p.id)
+    );
+    logger.info(`Deleted ${shippingProfiles.length} shipping profiles.`);
+  }
+
+  // ── Stock locations ───────────────────────────────────────────────────────
+  logger.info("Deleting existing stock locations...");
+  const stockLocations = await stockLocationModule.listStockLocations({});
+  if (stockLocations.length) {
+    await stockLocationModule.deleteStockLocations(
+      stockLocations.map((sl) => sl.id)
+    );
+    logger.info(`Deleted ${stockLocations.length} stock locations.`);
+  }
+
+  // ── Publishable API keys ──────────────────────────────────────────────────
+  logger.info("Deleting existing publishable API keys...");
+  const apiKeys = await apiKeyModule.listApiKeys({ type: "publishable" });
+  if (apiKeys.length) {
+    // Keys must be revoked before they can be deleted
+    await apiKeyModule.revoke(
+      { id: apiKeys.map((k) => k.id) },
+      { revoked_by: "seed-clean" }
+    );
+    await apiKeyModule.deleteApiKeys(apiKeys.map((k) => k.id));
+    logger.info(`Deleted ${apiKeys.length} publishable API keys.`);
+  }
+
+  // ── Tax regions ───────────────────────────────────────────────────────────
+  logger.info("Deleting existing tax regions...");
+  const { data: taxRegions } = await query.graph({
+    entity: "tax_region",
+    fields: ["id"],
+  });
+  if (taxRegions.length) {
+    await taxModule.deleteTaxRegions(
+      taxRegions.map((t: { id: string }) => t.id)
+    );
+    logger.info(`Deleted ${taxRegions.length} tax regions.`);
+  }
+
+  // ── Regions ───────────────────────────────────────────────────────────────
+  logger.info("Deleting existing regions...");
+  const regions = await regionModule.listRegions();
+  if (regions.length) {
+    await regionModule.deleteRegions(regions.map((r) => r.id));
+    logger.info(`Deleted ${regions.length} regions.`);
+  }
+
+  // ── Sales channels (keep "Default Sales Channel") ─────────────────────────
   logger.info("Deleting non-default sales channels...");
   const channels = await salesChannelModule.listSalesChannels();
   const toDelete = channels.filter(
-    (ch) =>
-      ch.name !== "Default Sales Channel" &&
-      ch.name !== "B2C Storefront" &&
-      ch.name !== "B2B Wholesale"
+    (ch) => ch.name !== "Default Sales Channel"
   );
   if (toDelete.length) {
     await salesChannelModule.deleteSalesChannels(toDelete.map((ch) => ch.id));
