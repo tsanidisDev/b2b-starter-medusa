@@ -4,7 +4,6 @@ import ProductPreview from "@/modules/products/components/product-preview"
 import { Pagination } from "@/modules/store/components/pagination"
 import { SortOptions } from "@/modules/store/components/refinement-list/sort-products"
 import { B2BCustomer } from "@/types"
-import { Container } from "@medusajs/ui"
 
 const PRODUCT_LIMIT = 12
 
@@ -72,7 +71,7 @@ export default async function PaginatedProducts({
   return (
     <>
       <ul
-        className="grid grid-cols-1 w-full small:grid-cols-3 medium:grid-cols-4 gap-3"
+        className="grid grid-cols-1 w-full small:grid-cols-3 medium:grid-cols-4 gap-4"
         data-testid="products-list"
       >
         {products.length > 0 ? (
@@ -84,9 +83,9 @@ export default async function PaginatedProducts({
             )
           })
         ) : (
-          <Container className="text-center text-sm text-neutral-500">
-            No products found for this category.
-          </Container>
+          <div className="col-span-full flex flex-col items-center justify-center py-20 gap-3">
+            <p className="text-sm text-muted-foreground">No products found.</p>
+          </div>
         )}
       </ul>
       {totalPages > 1 && (

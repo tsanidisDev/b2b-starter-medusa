@@ -1,67 +1,55 @@
 "use client"
 
-import Image from "next/image"
+import { Heading } from "@medusajs/ui"
+import Button from "@/modules/common/components/button"
 import LocalizedClientLink from "@/modules/common/components/localized-client-link"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Sparkles } from "lucide-react"
+import Image from "next/image"
 
 const Hero = () => {
   return (
-    <section className="relative h-[85vh] min-h-[560px] w-full overflow-hidden">
+    <section className="relative w-full overflow-hidden bg-secondary">
       {/* Background image */}
-      <Image
-        src="/hero-image.jpg"
-        alt="Greek silk textiles"
-        fill
-        priority
-        quality={95}
-        className="object-cover object-center"
-      />
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
+      <div className="absolute inset-0">
+        <Image
+          src="/hero-image.jpg"
+          alt="Greek silk fabric — Hellas Silk Athens"
+          fill
+          className="object-cover object-center opacity-40"
+          priority
+        />
+        {/* Gradient overlay — uses our CSS vars */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-background/40 to-background/80" />
+      </div>
 
       {/* Content */}
-      <div className="absolute inset-0 flex items-center">
-        <div className="content-container">
-          <div className="max-w-xl text-white space-y-6">
-            <Badge
-              variant="outline"
-              className="border-white/40 text-white bg-white/10 backdrop-blur-sm gap-1.5"
-            >
-              <Sparkles className="h-3 w-3" />
-              Handcrafted in Greece since 1987
-            </Badge>
+      <div className="relative content-container mx-auto flex flex-col items-start justify-end min-h-[80vh] pb-16 small:pb-24 gap-6">
+        {/* Eyebrow */}
+        <span className="text-xs uppercase tracking-[0.25em] text-accent font-medium">
+          Athens · Greece · Since 1987
+        </span>
 
-            <h1 className="text-5xl sm:text-6xl font-semibold leading-tight tracking-tight">
-              The Finest
-              <br />
-              <span className="text-primary-foreground italic font-light">Greek Silk</span>
-            </h1>
+        <Heading
+          level="h1"
+          className="text-5xl small:text-7xl font-semibold text-foreground leading-none tracking-tight max-w-xl"
+        >
+          Silk for every story
+        </Heading>
 
-            <p className="text-lg text-white/80 leading-relaxed max-w-md">
-              Scarves, clothing, and home textiles woven from pure Soufli silk —
-              the golden thread of northern Greece.
-            </p>
+        <p className="text-base small:text-lg text-muted-foreground max-w-sm leading-relaxed">
+          Scarves, robes and home linens woven from the finest Aegean mulberry silk. Timeless craft, contemporary design.
+        </p>
 
-            <div className="flex flex-wrap gap-3 pt-2">
-              <LocalizedClientLink href="/store">
-                <Button size="lg" className="gap-2 rounded-full">
-                  Shop Now
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </LocalizedClientLink>
-              <LocalizedClientLink href="/categories/scarves-shawls">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="rounded-full border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20"
-                >
-                  Scarves & Shawls
-                </Button>
-              </LocalizedClientLink>
-            </div>
-          </div>
+        <div className="flex items-center gap-3 flex-wrap">
+          <LocalizedClientLink href="/store">
+            <Button variant="primary" className="px-6">
+              Shop the collection
+            </Button>
+          </LocalizedClientLink>
+          <LocalizedClientLink href="/categories/scarves-shawls">
+            <Button variant="transparent" className="px-6 text-muted-foreground hover:text-foreground">
+              Scarves &amp; Shawls →
+            </Button>
+          </LocalizedClientLink>
         </div>
       </div>
     </section>

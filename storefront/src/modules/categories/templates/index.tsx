@@ -7,7 +7,7 @@ import { SortOptions } from "@/modules/store/components/refinement-list/sort-pro
 import PaginatedProducts from "@/modules/store/templates/paginated-products"
 import { ArrowUturnLeft } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
-import { Container, Text } from "@medusajs/ui"
+import { Text } from "@medusajs/ui"
 import { notFound } from "next/navigation"
 import { Suspense } from "react"
 
@@ -30,16 +30,16 @@ export default function CategoryTemplate({
   if (!currentCategory || !countryCode) notFound()
 
   return (
-    <div className="bg-neutral-100">
+    <div className="bg-background">
       <div
-        className="flex flex-col py-6 content-container gap-4"
+        className="flex flex-col py-8 content-container gap-6"
         data-testid="category-container"
       >
         <CategoryBreadcrumb
           categories={categories}
           category={currentCategory}
         />
-        <div className="flex flex-col small:flex-row small:items-start gap-3">
+        <div className="flex flex-col small:flex-row small:items-start gap-6">
           <RefinementList
             sortBy={sort}
             categories={categories}
@@ -49,20 +49,20 @@ export default function CategoryTemplate({
           />
           <div className="w-full">
             {currentCategory.products?.length === 0 ? (
-              <Container className="flex flex-col gap-2 justify-center text-center items-center text-sm text-neutral-500">
-                <Text className="font-medium">
-                  No products found for this category.
+              <div className="flex flex-col gap-4 items-center justify-center py-20 text-center">
+                <Text className="text-sm text-muted-foreground">
+                  No products found in this category.
                 </Text>
                 <LocalizedClientLink
                   href="/store"
                   className="flex gap-2 items-center"
                 >
                   <Button variant="secondary">
-                    Back to all products
                     <ArrowUturnLeft className="w-4 h-4" />
+                    Back to all products
                   </Button>
                 </LocalizedClientLink>
-              </Container>
+              </div>
             ) : (
               <Suspense
                 fallback={

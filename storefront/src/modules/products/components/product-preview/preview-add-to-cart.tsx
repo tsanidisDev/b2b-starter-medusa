@@ -17,36 +17,35 @@ const PreviewAddToCart = ({
 
   const handleAddToCart = async () => {
     if (!product?.variants?.[0]?.id) return null
-
     setIsAdding(true)
-
     addToCartEventBus.emitCartAdd({
       lineItems: [
         {
-          productVariant: {
-            ...product?.variants?.[0],
-            product,
-          },
+          productVariant: { ...product?.variants?.[0], product },
           quantity: 1,
         },
       ],
       regionId: region.id,
     })
-
     setIsAdding(false)
   }
+
   return (
     <Button
-      className="rounded-full p-3 border-none shadow-none"
+      variant="primary"
+      size="small"
+      className="rounded-full p-2 shrink-0"
       onClick={(e) => {
         e.preventDefault()
         handleAddToCart()
       }}
       isLoading={isAdding}
+      title="Add to cart"
     >
-      <ShoppingBag fill="#fff" />
+      <ShoppingBag />
     </Button>
   )
 }
 
 export default PreviewAddToCart
+

@@ -121,34 +121,38 @@
 
 ## Phase 5 — Storefront: Full Redesign
 
-> Rebuild every module with shadcn components, keeping existing business logic.
+> Minimal luxury redesign using @medusajs/ui + shadcn where needed. CSS vars throughout. TanStack Query/Table/Virtual for data & tables.
+
+### 5.0 TanStack Integration
+- [x] Install `@tanstack/react-query` 5.90.21, `@tanstack/react-table` 8.21.3, `@tanstack/react-virtual` 3.13.19, `@tanstack/react-query-devtools`
+- [x] Create `storefront/src/lib/context/query-provider.tsx` — QueryClient + devtools
+- [x] Wire QueryProvider into root `layout.tsx`
 
 ### 5.1 Layout
-- [ ] **Nav:** Redesign with shadcn `NavigationMenu` + `Sheet` (mobile)
-  - Logo (Greek silk branding)
-  - Category mega-menu
-  - B2C/B2B channel selector (`Select`)
-  - Search (`Command` palette or input)
-  - Account dropdown (`DropdownMenu`)
-  - Cart sheet (`Sheet`)
-  - Dark mode toggle
-- [ ] **Footer:** Redesign with shadcn components, brand story section
+- [x] **Nav:** Minimal "Hellas Silk Athens" bar — backdrop-blur, CSS vars, ChannelSelector + Quote + Account + Cart
+- [x] **Footer:** 4-column grid, brand story, CSS vars, no MedusaCTA
 - [ ] **Mobile nav:** `Sheet` from left with category tree
 
 ### 5.2 Home Page
-- [ ] Hero section: full-width silk imagery with CTA
-- [ ] Featured collections carousel (`Carousel`)
+- [x] Hero: editorial left-aligned, full-width image, gradient overlay, `Heading` from @medusajs/ui, CSS vars
+- [x] Featured product rail: section heading with collection eyebrow, `bg-background`, 4-col grid, `Text` from @medusajs/ui
+- [x] Home page metadata: "Hellas Silk — Luxury Silk from Athens", no gap/margin wrapper
 - [ ] Category grid (`Card` components)
 - [ ] "Our Story" section (Greek heritage narrative)
-- [ ] Testimonials / trust signals
 - [ ] Newsletter signup (`Input` + `Button`)
 
 ### 5.3 Product Listing (PLP)
-- [ ] Grid layout with `Card` components
-- [ ] Filter sidebar (`Accordion` + `Checkbox` + `RadioGroup`)
-- [ ] Sort dropdown (`Select`)
-- [ ] Pagination or infinite scroll
+- [x] **ProductPreview card:** `bg-card border border-border rounded-[var(--radius)]`, `Text` from @medusajs/ui, CSS vars
+- [x] **PreviewPrice:** `text-muted-foreground` / `text-foreground` / `text-accent`, CSS vars
+- [x] **PreviewAddToCart:** minimal icon `Button` from @medusajs/ui, rounded-full
+- [x] **SortProducts:** shadcn `Select`, borderless trigger, "Sort" label with tracking-widest
+- [x] **SearchInResults:** minimal inline, border-b, MagnifyingGlassMini icon
+- [x] **CategoryList:** tree nav, `Text` from @medusajs/ui, `text-muted-foreground` → `text-foreground`, expand/collapse, no Radio for leaf nodes
+- [x] **RefinementList:** card wrapper `bg-card border border-border`, gap-6 layout
+- [x] **StoreTemplate:** `bg-background`, py-8, gap-6
+- [x] **PaginatedProducts:** clean empty state, `gap-4` grid
 - [ ] Quick view modal (`Dialog`)
+- [ ] Infinite scroll or improved pagination
 
 ### 5.4 Product Detail (PDP)
 - [ ] Image gallery with zoom (`Carousel` + `AspectRatio`)

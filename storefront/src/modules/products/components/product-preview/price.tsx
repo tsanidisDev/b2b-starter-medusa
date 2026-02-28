@@ -1,31 +1,28 @@
 import { VariantPrice } from "@/lib/util/get-product-price"
 import { Text, clx } from "@medusajs/ui"
 
-// TODO: Price needs to access price list type
 export default async function PreviewPrice({ price }: { price: VariantPrice }) {
-  if (!price) {
-    return null
-  }
+  if (!price) return null
 
   return (
-    <>
+    <div className="flex items-baseline gap-1.5">
       {price.price_type === "sale" && (
         <Text
-          className="line-through text-ui-fg-muted"
+          className="line-through text-muted-foreground text-xs"
           data-testid="original-price"
         >
           {price.original_price}
         </Text>
       )}
-
       <Text
-        className={clx("text-neutral-950 font-medium text-lg", {
-          "text-ui-fg-interactive": price.price_type === "sale",
+        className={clx("text-sm font-semibold text-foreground", {
+          "text-accent": price.price_type === "sale",
         })}
         data-testid="price"
       >
         {price.calculated_price}
       </Text>
-    </>
+    </div>
   )
 }
+

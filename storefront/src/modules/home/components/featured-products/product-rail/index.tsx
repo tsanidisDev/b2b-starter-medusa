@@ -1,8 +1,9 @@
 import { getProductsById } from "@/lib/data/products"
 import { HttpTypes } from "@medusajs/types"
-import LocalizedClientLink from "@/modules/common/components/localized-client-link"
+import { Text } from "@medusajs/ui"
+
+import InteractiveLink from "@/modules/common/components/interactive-link"
 import ProductPreview from "@/modules/products/components/product-preview"
-import { ArrowRight } from "lucide-react"
 
 export default async function ProductRail({
   collection,
@@ -22,42 +23,29 @@ export default async function ProductRail({
     regionId: region.id,
   })
 
-  if (!productsWithPrices?.length) {
-    return null
-  }
-
   return (
-    <div className="py-12 sm:py-20">
-      <div className="content-container">
-        {/* Header row */}
-        <div className="flex items-end justify-between mb-8">
+    <section className="bg-background">
+      <div className="content-container py-16 small:py-24">
+        <div className="flex justify-between items-end mb-10">
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-              Collection
-            </p>
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
+            <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">Collection</p>
+            <Text className="text-2xl font-semibold text-foreground tracking-tight">
               {collection.title}
-            </h2>
+            </Text>
           </div>
-          <LocalizedClientLink
-            href={`/collections/${collection.handle}`}
-            className="flex items-center gap-1 text-sm font-medium text-primary hover:underline shrink-0 ml-4"
-          >
+          <InteractiveLink href={`/collections/${collection.handle}`}>
             View all
-            <ArrowRight className="h-3.5 w-3.5" />
-          </LocalizedClientLink>
+          </InteractiveLink>
         </div>
-
-        {/* Product grid */}
-        <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {productsWithPrices.map((product) => (
-            <li key={product.id}>
-              <ProductPreview product={product} region={region} isFeatured />
-            </li>
-          ))}
+        <ul className="grid grid-cols-1 small:grid-cols-4 gap-4">
+          {productsWithPrices &&
+            productsWithPrices.map((product) => (
+              <li key={product.id}>
+                <ProductPreview product={product} region={region} isFeatured />
+              </li>
+            ))}
         </ul>
       </div>
-    </div>
+    </section>
   )
 }
-

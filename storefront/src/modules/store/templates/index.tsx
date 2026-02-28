@@ -21,13 +21,13 @@ const StoreTemplate = ({
   const sort = sortBy || "created_at"
 
   return (
-    <div className="bg-neutral-100">
+    <div className="bg-background">
       <div
-        className="flex flex-col py-6 content-container gap-4"
+        className="flex flex-col py-8 content-container gap-6"
         data-testid="category-container"
       >
         <StoreBreadcrumb />
-        <div className="flex flex-col small:flex-row small:items-start gap-3">
+        <div className="flex flex-col small:flex-row small:items-start gap-6">
           <RefinementList sortBy={sort} categories={categories} />
           <div className="w-full">
             <Suspense fallback={<SkeletonProductGrid />}>

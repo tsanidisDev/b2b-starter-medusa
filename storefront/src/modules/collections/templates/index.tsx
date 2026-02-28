@@ -21,10 +21,10 @@ export default function CollectionTemplate({
   const sort = sortBy || "created_at"
 
   return (
-    <div className="bg-neutral-100">
-      <div className="flex flex-col py-6 content-container gap-4">
+    <div className="bg-background">
+      <div className="flex flex-col py-8 content-container gap-6">
         <CollectionBreadcrumb collection={collection} />
-        <div className="flex flex-col small:flex-row small:items-start gap-3">
+        <div className="flex flex-col small:flex-row small:items-start gap-6">
           <RefinementList sortBy={sort} listName={collection.title} />
           <div className="w-full">
             <Suspense fallback={<SkeletonProductGrid />}>
