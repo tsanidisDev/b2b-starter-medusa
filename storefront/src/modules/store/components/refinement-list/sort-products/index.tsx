@@ -29,7 +29,7 @@ const SortProducts = ({
 }: SortProductsProps) => {
   return (
     <div className="flex items-center justify-between gap-2 py-2 px-3">
-      <span className="text-xs text-muted-foreground uppercase tracking-widest">Sort</span>
+      <span className="text-xs text-muted-foreground uppercase tracking-widest">Sort by:</span>
       <Select
         value={sortBy}
         onValueChange={(v) => setQueryParams("sortBy", v as SortOptions)}

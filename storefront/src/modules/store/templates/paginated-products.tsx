@@ -83,10 +83,10 @@ export default async function PaginatedProducts({
       {/* Result count */}
       <p className="text-xs text-muted-foreground">
         {count === 0
-          ? "No products found"
+          ? "No results found"
           : count === 1
-            ? "1 product found"
-            : `${count} products found`}
+            ? "There is 1 result in total"
+            : `There are ${count} results in total`}
       </p>
 
       <ul
