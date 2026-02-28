@@ -16,6 +16,13 @@ type PaginatedProductsParams = {
   customer_group_id?: string
 }
 
+const GRID_COLS: Record<string, string> = {
+  "2": "grid-cols-1 small:grid-cols-2",
+  "3": "grid-cols-1 small:grid-cols-2 medium:grid-cols-3",
+  "4": "grid-cols-1 small:grid-cols-3 medium:grid-cols-4",
+  list: "grid-cols-1",
+}
+
 export default async function PaginatedProducts({
   sortBy,
   page,
@@ -24,6 +31,7 @@ export default async function PaginatedProducts({
   productsIds,
   countryCode,
   customer,
+  view = "3",
 }: {
   sortBy?: SortOptions
   page: number
@@ -32,6 +40,7 @@ export default async function PaginatedProducts({
   productsIds?: string[]
   countryCode: string
   customer?: B2BCustomer | null
+  view?: string
 }) {
   const queryParams: PaginatedProductsParams = {
     limit: 12,
@@ -67,27 +76,36 @@ export default async function PaginatedProducts({
   })
 
   const totalPages = Math.ceil(count / PRODUCT_LIMIT)
+  const gridClass = GRID_COLS[view] ?? GRID_COLS["3"]
 
   return (
-    <>
+    <div className="flex flex-col gap-4">
+      {/* Result count */}
+      <p className="text-xs text-muted-foreground">
+        {count === 0
+          ? "No products found"
+          : count === 1
+            ? "1 product found"
+            : `${count} products found`}
+      </p>
+
       <ul
-        className="grid grid-cols-1 w-full small:grid-cols-3 medium:grid-cols-4 gap-4"
+        className={`grid w-full gap-4 ${gridClass}`}
         data-testid="products-list"
       >
         {products.length > 0 ? (
-          products.map((p) => {
-            return (
-              <li key={p.id}>
-                <ProductPreview product={p} region={region} />
-              </li>
-            )
-          })
+          products.map((p) => (
+            <li key={p.id}>
+              <ProductPreview product={p} region={region} />
+            </li>
+          ))
         ) : (
-          <div className="col-span-full flex flex-col items-center justify-center py-20 gap-3">
+          <li className="col-span-full flex flex-col items-center justify-center py-20 gap-3">
             <p className="text-sm text-muted-foreground">No products found.</p>
-          </div>
+          </li>
         )}
       </ul>
+
       {totalPages > 1 && (
         <Pagination
           data-testid="product-pagination"
@@ -95,6 +113,7 @@ export default async function PaginatedProducts({
           totalPages={totalPages}
         />
       )}
-    </>
+    </div>
   )
 }
+

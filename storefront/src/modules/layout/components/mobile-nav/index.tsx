@@ -16,6 +16,7 @@ import { HttpTypes } from "@medusajs/types"
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Shop All", href: "/store" },
+  { label: "About", href: "/about" },
 ]
 
 export function MobileNav({

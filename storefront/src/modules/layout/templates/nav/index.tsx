@@ -5,6 +5,7 @@ import AccountButton from "@/modules/account/components/account-button"
 import CartButton from "@/modules/cart/components/cart-button"
 import LocalizedClientLink from "@/modules/common/components/localized-client-link"
 import FilePlus from "@/modules/common/icons/file-plus"
+import { AnnouncementBar } from "@/modules/layout/components/announcement-bar"
 import { MegaMenuWrapper } from "@/modules/layout/components/mega-menu"
 import { ChannelSelector } from "@/modules/layout/components/channel-selector"
 import { MobileNav } from "@/modules/layout/components/mobile-nav"
@@ -22,8 +23,12 @@ export async function NavigationHeader() {
   const categories = await listCategories({ offset: 0, limit: 8 }).catch(() => [])
 
   return (
-    <div className="sticky top-0 inset-x-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-      <header className="content-container mx-auto flex h-16 items-center justify-between gap-4">
+    <>
+      {/* Announcement bar — scrolls away, not sticky */}
+      <AnnouncementBar />
+
+      <div className="sticky top-0 inset-x-0 z-50 bg-background/[0.97] backdrop-blur-[3px] border-b border-border">
+        <header className="content-container mx-auto flex h-16 items-center justify-between gap-4">
         {/* Mobile hamburger — shown only on small screens */}
         <MobileNav categories={categories} />
 
@@ -40,15 +45,23 @@ export async function NavigationHeader() {
           </span>
         </LocalizedClientLink>
 
-        {/* Centre nav — categories (desktop only) */}
-        <nav className="hidden small:flex flex-1 justify-center">
-          <ul>
-            <li>
-              <Suspense fallback={<SkeletonMegaMenu />}>
-                <MegaMenuWrapper />
-              </Suspense>
-            </li>
-          </ul>
+        {/* Centre nav — desktop only */}
+        <nav className="hidden small:flex flex-1 justify-center items-center gap-1">
+          <Suspense fallback={<SkeletonMegaMenu />}>
+            <MegaMenuWrapper />
+          </Suspense>
+          <LocalizedClientLink
+            href="/store"
+            className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
+          >
+            Store
+          </LocalizedClientLink>
+          <LocalizedClientLink
+            href="/about"
+            className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
+          >
+            About
+          </LocalizedClientLink>
         </nav>
 
         {/* Right actions */}
@@ -89,6 +102,7 @@ export async function NavigationHeader() {
           </Suspense>
         </div>
       </header>
-    </div>
+      </div>
+    </>
   )
 }

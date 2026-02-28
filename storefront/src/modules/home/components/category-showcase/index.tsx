@@ -1,13 +1,14 @@
 import { listCategories } from "@/lib/data/categories"
 import LocalizedClientLink from "@/modules/common/components/localized-client-link"
 
-const CATEGORY_PALETTE: Record<string, string> = {
-  "scarves-shawls": "from-amber-900/30 to-amber-700/10",
-  clothing: "from-slate-700/30 to-slate-500/10",
-  "home-living": "from-stone-600/30 to-stone-400/10",
-  accessories: "from-yellow-800/30 to-yellow-600/10",
-  "gifts-sets": "from-rose-800/30 to-rose-600/10",
-}
+// Theme-variable-based gradient stops (no hardcoded colours)
+const GRADIENT_CYCLE = [
+  "from-primary/20 to-primary/5",
+  "from-accent/40 to-accent/10",
+  "from-secondary/80 to-secondary/30",
+  "from-foreground/10 to-foreground/5",
+  "from-primary/15 to-accent/10",
+]
 
 export default async function CategoryShowcase() {
   const categories = await listCategories({ limit: 10 }).catch(() => [])
@@ -39,9 +40,7 @@ export default async function CategoryShowcase() {
         {/* Grid */}
         <div className="grid grid-cols-2 small:grid-cols-5 gap-3">
           {topCategories.map((cat, i) => {
-            const gradient =
-              CATEGORY_PALETTE[cat.handle ?? ""] ??
-              "from-primary/20 to-primary/5"
+            const gradient = GRADIENT_CYCLE[i % GRADIENT_CYCLE.length]
             const isLarge = i === 0
             return (
               <LocalizedClientLink

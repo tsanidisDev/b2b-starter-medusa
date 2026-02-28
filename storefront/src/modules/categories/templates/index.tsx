@@ -4,6 +4,7 @@ import LocalizedClientLink from "@/modules/common/components/localized-client-li
 import SkeletonProductGrid from "@/modules/skeletons/templates/skeleton-product-grid"
 import RefinementList from "@/modules/store/components/refinement-list"
 import { SortOptions } from "@/modules/store/components/refinement-list/sort-products"
+import StoreToolbar from "@/modules/store/components/store-toolbar"
 import PaginatedProducts from "@/modules/store/templates/paginated-products"
 import { ArrowUturnLeft } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
@@ -17,15 +18,18 @@ export default function CategoryTemplate({
   sortBy,
   page,
   countryCode,
+  view,
 }: {
   categories: HttpTypes.StoreProductCategory[]
   currentCategory: HttpTypes.StoreProductCategory
   sortBy?: SortOptions
   page?: string
   countryCode: string
+  view?: string
 }) {
   const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "created_at"
+  const gridView = view ?? "3"
 
   if (!currentCategory || !countryCode) notFound()
 
@@ -47,7 +51,8 @@ export default function CategoryTemplate({
             listName={currentCategory.name}
             data-testid="sort-by-container"
           />
-          <div className="w-full">
+          <div className="w-full flex flex-col gap-3">
+            <StoreToolbar sortBy={sort} />
             {currentCategory.products?.length === 0 ? (
               <div className="flex flex-col gap-4 items-center justify-center py-20 text-center">
                 <Text className="text-sm text-muted-foreground">
@@ -76,6 +81,7 @@ export default function CategoryTemplate({
                   page={pageNumber}
                   categoryId={currentCategory.id}
                   countryCode={countryCode}
+                  view={gridView}
                 />
               </Suspense>
             )}
@@ -85,3 +91,4 @@ export default function CategoryTemplate({
     </div>
   )
 }
+
