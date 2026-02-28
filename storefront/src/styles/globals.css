@@ -87,111 +87,112 @@
      Overrides the preset's default dark-zinc palette so all
      @medusajs/ui components (Button, Table, Drawer, Prompt…)
      automatically pick up the silk/gold theme.
-     No component file changes needed.
+     All values are derived from the theme tokens above —
+     no hardcoded colours anywhere.
      ────────────────────────────────────────────────────────── */
   :root {
     /* Backgrounds */
-    --bg-base:                  oklch(0.99 0.003 85);
-    --bg-base-hover:            oklch(0.96 0.008 80);
-    --bg-base-pressed:          oklch(0.93 0.015 80);
-    --bg-subtle:                oklch(0.96 0.008 80);
-    --bg-subtle-hover:          oklch(0.94 0.01  80);
-    --bg-subtle-pressed:        oklch(0.91 0.015 75);
-    --bg-component:             oklch(0.99 0.003 85);
-    --bg-component-hover:       oklch(0.96 0.008 80);
-    --bg-component-pressed:     oklch(0.93 0.015 80);
-    --bg-field:                 oklch(0.98 0.005 85);
-    --bg-field-hover:           oklch(0.95 0.010 80);
-    --bg-field-component:       oklch(0.98 0.005 85);
-    --bg-field-component-hover: oklch(0.95 0.010 80);
-    --bg-interactive:           oklch(0.45 0.08  55);  /* primary */
-    --bg-disabled:              oklch(0.93 0.015 80);
-    --bg-highlight:             oklch(0.93 0.03  75);
-    --bg-highlight-hover:       oklch(0.90 0.04  70);
-    --bg-overlay:               oklch(0.18 0.02 60 / 0.5);
-    --bg-switch-off:            oklch(0.75 0.03  80);
-    --bg-switch-off-hover:      oklch(0.70 0.04  75);
+    --bg-base:                  var(--card);
+    --bg-base-hover:            var(--sidebar-background);
+    --bg-base-pressed:          var(--secondary);
+    --bg-subtle:                var(--sidebar-background);
+    --bg-subtle-hover:          var(--muted);
+    --bg-subtle-pressed:        oklch(from var(--secondary) calc(l - 0.02) c h);
+    --bg-component:             var(--card);
+    --bg-component-hover:       var(--sidebar-background);
+    --bg-component-pressed:     var(--secondary);
+    --bg-field:                 var(--background);
+    --bg-field-hover:           oklch(from var(--background) calc(l - 0.03) c h);
+    --bg-field-component:       var(--background);
+    --bg-field-component-hover: oklch(from var(--background) calc(l - 0.03) c h);
+    --bg-interactive:           var(--primary);
+    --bg-disabled:              var(--secondary);
+    --bg-highlight:             oklch(from var(--accent) calc(l + 0.18) calc(c * 0.25) h);
+    --bg-highlight-hover:       oklch(from var(--accent) calc(l + 0.15) calc(c * 0.33) h);
+    --bg-overlay:               oklch(from var(--foreground) l c h / 0.5);
+    --bg-switch-off:            oklch(from var(--border) calc(l - 0.13) calc(c + 0.015) h);
+    --bg-switch-off-hover:      oklch(from var(--border) calc(l - 0.18) calc(c + 0.025) h);
     /* Foregrounds */
-    --fg-base:                  oklch(0.18 0.02  60);  /* foreground */
-    --fg-subtle:                oklch(0.38 0.03  60);
-    --fg-muted:                 oklch(0.48 0.03  60);  /* muted-foreground */
-    --fg-disabled:              oklch(0.65 0.02  75);
-    --fg-interactive:           oklch(0.45 0.08  55);  /* primary */
-    --fg-interactive-hover:     oklch(0.38 0.09  55);
-    --fg-error:                 oklch(0.55 0.20  25);
-    --fg-on-color:              oklch(0.98 0.005 85);
-    --fg-on-inverted:           oklch(0.98 0.005 85);
+    --fg-base:                  var(--foreground);
+    --fg-subtle:                oklch(from var(--foreground) calc(l + 0.20) calc(c + 0.01) h);
+    --fg-muted:                 var(--muted-foreground);
+    --fg-disabled:              oklch(from var(--muted-foreground) calc(l + 0.17) calc(c - 0.01) h);
+    --fg-interactive:           var(--primary);
+    --fg-interactive-hover:     oklch(from var(--primary) calc(l - 0.07) calc(c + 0.01) h);
+    --fg-error:                 var(--destructive);
+    --fg-on-color:              var(--primary-foreground);
+    --fg-on-inverted:           var(--primary-foreground);
     /* Borders */
-    --border-base:              oklch(0.88 0.015 80);  /* border */
-    --border-strong:            oklch(0.75 0.025 75);
-    --border-interactive:       oklch(0.45 0.08  55);  /* ring */
-    --border-error:             oklch(0.55 0.20  25);
-    --border-danger:            oklch(0.50 0.22  25);
+    --border-base:              var(--border);
+    --border-strong:            oklch(from var(--border) calc(l - 0.13) calc(c + 0.01) h);
+    --border-interactive:       var(--ring);
+    --border-error:             var(--destructive);
+    --border-danger:            oklch(from var(--destructive) calc(l - 0.05) c h);
     --border-transparent:       transparent;
     /* Buttons */
-    --button-inverted:          oklch(0.18 0.02  60);
-    --button-inverted-hover:    oklch(0.25 0.03  60);
-    --button-inverted-pressed:  oklch(0.30 0.04  60);
-    --button-neutral:           oklch(0.99 0.003 85);
-    --button-neutral-hover:     oklch(0.94 0.01  80);
-    --button-neutral-pressed:   oklch(0.91 0.015 75);
-    --button-danger:            oklch(0.50 0.22  25);
-    --button-danger-hover:      oklch(0.55 0.20  25);
-    --button-danger-pressed:    oklch(0.45 0.22  25);
+    --button-inverted:          var(--foreground);
+    --button-inverted-hover:    oklch(from var(--foreground) calc(l + 0.07) calc(c + 0.01) h);
+    --button-inverted-pressed:  oklch(from var(--foreground) calc(l + 0.12) calc(c + 0.02) h);
+    --button-neutral:           var(--card);
+    --button-neutral-hover:     var(--muted);
+    --button-neutral-pressed:   oklch(from var(--secondary) calc(l - 0.02) c h);
+    --button-danger:            oklch(from var(--destructive) calc(l - 0.05) c h);
+    --button-danger-hover:      var(--destructive);
+    --button-danger-pressed:    oklch(from var(--destructive) calc(l - 0.10) c h);
     --button-transparent:       transparent;
-    --button-transparent-hover: oklch(0.94 0.01  80);
-    --button-transparent-pressed: oklch(0.91 0.015 75);
+    --button-transparent-hover: var(--muted);
+    --button-transparent-pressed: oklch(from var(--secondary) calc(l - 0.02) c h);
   }
 
   /* @medusajs/ui bridge — dark mode */
   .dark {
     /* Backgrounds */
-    --bg-base:                  oklch(0.19 0.015 60);
-    --bg-base-hover:            oklch(0.22 0.015 60);
-    --bg-base-pressed:          oklch(0.25 0.015 60);
-    --bg-subtle:                oklch(0.21 0.013 60);
-    --bg-subtle-hover:          oklch(0.24 0.013 60);
-    --bg-subtle-pressed:        oklch(0.27 0.013 60);
-    --bg-component:             oklch(0.22 0.015 60);
-    --bg-component-hover:       oklch(0.25 0.015 60);
-    --bg-component-pressed:     oklch(0.28 0.015 60);
-    --bg-field:                 oklch(0.20 0.012 60);
-    --bg-field-hover:           oklch(0.23 0.012 60);
-    --bg-field-component:       oklch(0.20 0.012 60);
-    --bg-field-component-hover: oklch(0.23 0.012 60);
-    --bg-interactive:           oklch(0.70 0.12  65);  /* dark primary */
-    --bg-disabled:              oklch(0.24 0.012 60);
-    --bg-highlight:             oklch(0.26 0.06  65);
-    --bg-highlight-hover:       oklch(0.30 0.07  65);
-    --bg-overlay:               oklch(0.10 0.01 60 / 0.7);
-    --bg-switch-off:            oklch(0.30 0.015 60);
-    --bg-switch-off-hover:      oklch(0.34 0.015 60);
+    --bg-base:                  var(--card);
+    --bg-base-hover:            oklch(from var(--card) calc(l + 0.03) c h);
+    --bg-base-pressed:          var(--secondary);
+    --bg-subtle:                oklch(from var(--card) calc(l + 0.02) calc(c - 0.003) h);
+    --bg-subtle-hover:          var(--secondary);
+    --bg-subtle-pressed:        oklch(from var(--secondary) calc(l + 0.03) calc(c - 0.002) h);
+    --bg-component:             var(--muted);
+    --bg-component-hover:       var(--secondary);
+    --bg-component-pressed:     oklch(from var(--secondary) calc(l + 0.04) c h);
+    --bg-field:                 oklch(from var(--card) calc(l + 0.01) calc(c - 0.003) h);
+    --bg-field-hover:           oklch(from var(--muted) calc(l + 0.01) c h);
+    --bg-field-component:       oklch(from var(--card) calc(l + 0.01) calc(c - 0.003) h);
+    --bg-field-component-hover: oklch(from var(--muted) calc(l + 0.01) c h);
+    --bg-interactive:           var(--primary);
+    --bg-disabled:              var(--secondary);
+    --bg-highlight:             oklch(from var(--accent) calc(l - 0.39) calc(c * 0.60) h);
+    --bg-highlight-hover:       oklch(from var(--accent) calc(l - 0.35) calc(c * 0.70) h);
+    --bg-overlay:               oklch(from var(--background) calc(l - 0.06) calc(c - 0.005) h / 0.7);
+    --bg-switch-off:            oklch(from var(--border) calc(l + 0.02) c h);
+    --bg-switch-off-hover:      oklch(from var(--border) calc(l + 0.06) c h);
     /* Foregrounds */
-    --fg-base:                  oklch(0.93 0.008 80);
-    --fg-subtle:                oklch(0.75 0.015 75);
-    --fg-muted:                 oklch(0.62 0.02  75);
-    --fg-disabled:              oklch(0.40 0.015 65);
-    --fg-interactive:           oklch(0.70 0.12  65);
-    --fg-interactive-hover:     oklch(0.78 0.10  65);
-    --fg-error:                 oklch(0.65 0.20  25);
-    --fg-on-color:              oklch(0.14 0.01  60);
-    --fg-on-inverted:           oklch(0.14 0.01  60);
+    --fg-base:                  var(--foreground);
+    --fg-subtle:                oklch(from var(--foreground) calc(l - 0.18) calc(c + 0.007) calc(h - 5));
+    --fg-muted:                 var(--muted-foreground);
+    --fg-disabled:              oklch(from var(--muted-foreground) calc(l - 0.22) calc(c - 0.005) calc(h - 10));
+    --fg-interactive:           var(--primary);
+    --fg-interactive-hover:     oklch(from var(--primary) calc(l + 0.08) calc(c - 0.02) h);
+    --fg-error:                 oklch(from var(--destructive) calc(l + 0.10) c h);
+    --fg-on-color:              var(--primary-foreground);
+    --fg-on-inverted:           var(--primary-foreground);
     /* Borders */
-    --border-base:              oklch(0.28 0.015 60);
-    --border-strong:            oklch(0.38 0.02  65);
-    --border-interactive:       oklch(0.70 0.12  65);
-    --border-error:             oklch(0.65 0.20  25);
-    --border-danger:            oklch(0.60 0.22  25);
+    --border-base:              var(--border);
+    --border-strong:            oklch(from var(--border) calc(l + 0.10) calc(c + 0.005) calc(h + 5));
+    --border-interactive:       var(--ring);
+    --border-error:             oklch(from var(--destructive) calc(l + 0.10) c h);
+    --border-danger:            oklch(from var(--destructive) calc(l + 0.05) calc(c + 0.02) h);
     /* Buttons */
-    --button-inverted:          oklch(0.90 0.008 80);
-    --button-inverted-hover:    oklch(0.95 0.005 85);
-    --button-inverted-pressed:  oklch(0.98 0.003 85);
-    --button-neutral:           oklch(0.22 0.012 60);
-    --button-neutral-hover:     oklch(0.26 0.012 60);
-    --button-neutral-pressed:   oklch(0.30 0.012 60);
-    --button-danger:            oklch(0.55 0.22  25);
-    --button-danger-hover:      oklch(0.60 0.20  25);
-    --button-danger-pressed:    oklch(0.50 0.22  25);
+    --button-inverted:          var(--secondary-foreground);
+    --button-inverted-hover:    oklch(from var(--foreground) calc(l + 0.02) calc(c - 0.003) calc(h + 5));
+    --button-inverted-pressed:  oklch(from var(--foreground) calc(l + 0.05) calc(c - 0.005) calc(h + 5));
+    --button-neutral:           var(--muted);
+    --button-neutral-hover:     oklch(from var(--muted) calc(l + 0.04) c h);
+    --button-neutral-pressed:   oklch(from var(--muted) calc(l + 0.08) c h);
+    --button-danger:            oklch(from var(--destructive) l calc(c + 0.02) h);
+    --button-danger-hover:      oklch(from var(--destructive) calc(l + 0.05) c h);
+    --button-danger-pressed:    oklch(from var(--destructive) calc(l - 0.05) calc(c + 0.02) h);
   }
 
   * {
@@ -236,9 +237,9 @@
   select:-webkit-autofill,
   select:-webkit-autofill:hover,
   select:-webkit-autofill:focus {
-    border: 1px solid #212121;
-    -webkit-text-fill-color: #212121;
-    -webkit-box-shadow: 0 0 0px 1000px #fff inset;
+    border: 1px solid var(--input);
+    -webkit-text-fill-color: var(--foreground);
+    -webkit-box-shadow: 0 0 0px 1000px var(--background) inset;
     transition: background-color 5000s ease-in-out 0s;
   }
 
@@ -256,7 +257,7 @@
   }
 
   .contrast-btn {
-    @apply px-4 py-2 border border-black rounded-full hover:bg-black hover:text-white transition-colors duration-200 ease-in;
+    @apply px-4 py-2 border border-foreground rounded-full hover:bg-foreground hover:text-background transition-colors duration-200 ease-in;
   }
 
   .text-xsmall-regular {
