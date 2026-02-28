@@ -4,7 +4,7 @@ import { Badge, Container, Text } from "@medusajs/ui"
 const AppliedPromotions = ({
   promotions,
 }: {
-  promotions: HttpTypes.StorePromotion[]
+  promotions: HttpTypes.StoreCartPromotion[]
 }) => {
   return (
     <Container className="flex gap-2 items-center py-3 flex-wrap">
