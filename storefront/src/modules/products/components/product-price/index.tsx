@@ -12,11 +12,11 @@ export default function ProductPrice({
   })
 
   if (!cheapestPrice) {
-    return <div className="block w-32 h-9 bg-gray-100 animate-pulse" />
+    return <div className="block w-32 h-9 bg-muted animate-pulse rounded" />
   }
 
   return (
-    <div className="flex flex-col text-neutral-950">
+    <div className="flex flex-col text-foreground">
       <span
         className={clx({
           "text-ui-fg-interactive": cheapestPrice.price_type === "sale",
@@ -29,7 +29,7 @@ export default function ProductPrice({
         >
           From {cheapestPrice.calculated_price}
         </Text>
-        <Text className="text-neutral-600 text-[0.6rem]">Excl. VAT</Text>
+        <Text className="text-muted-foreground text-[0.6rem]">Excl. VAT</Text>
       </span>
       {cheapestPrice.price_type === "sale" && (
         <p

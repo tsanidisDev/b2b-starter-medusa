@@ -43,9 +43,9 @@ const Summary = ({ customer, spendLimitExceeded }: SummaryProps) => {
       <PromotionCode cart={cart} />
       <Divider className="my-6" />
       {spendLimitExceeded && (
-        <div className="flex items-center gap-x-2 bg-neutral-100 p-3 rounded-md shadow-borders-base">
+        <div className="flex items-center gap-x-2 bg-amber-500/10 border border-amber-500/20 p-3 rounded-md">
           <ExclamationCircle className="text-orange-500 w-fit overflow-visible" />
-          <p className="text-neutral-950 text-xs">
+          <p className="text-foreground text-xs">
             This order exceeds your spending limit.
             <br />
             Please contact your manager for approval.

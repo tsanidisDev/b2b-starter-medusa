@@ -78,7 +78,7 @@ const CartTotals: React.FC = () => {
       <div className="flex items-center justify-between text-ui-fg-base mb-2 txt-medium ">
         <Text className="font-medium">Total</Text>
         {isUpdatingCart ? (
-          <div className="w-28 h-6 mt-[3px] bg-neutral-200 rounded-full animate-pulse" />
+          <div className="w-28 h-6 mt-[3px] bg-muted rounded-full animate-pulse" />
         ) : (
           <Text
             className="txt-xlarge-plus"

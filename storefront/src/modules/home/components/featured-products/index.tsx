@@ -18,7 +18,7 @@ export default async function FeaturedProducts({
   }
 
   return (
-    <ul className="flex flex-col gap-x-6 bg-neutral-100">
+    <ul className="flex flex-col gap-x-6 bg-background">
       {collections.map((collection) => (
         <li key={collection.id}>
           <ProductRail collection={collection} region={region} />

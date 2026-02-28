@@ -106,7 +106,7 @@ const Register = ({ setCurrentView, regions }: Props) => {
       className="max-w-sm flex flex-col items-start gap-2 my-8"
       data-testid="register-page"
     >
-      <Text className="text-4xl text-neutral-950 text-left mb-4">
+      <Text className="text-4xl text-foreground text-left mb-4">
         Create your
         <br />
         company account.
@@ -120,7 +120,7 @@ const Register = ({ setCurrentView, regions }: Props) => {
             type="email"
             autoComplete="email"
             data-testid="email-input"
-            className="bg-white"
+            className="bg-background"
             value={formData.email}
             onChange={handleChange}
           />
@@ -130,7 +130,7 @@ const Register = ({ setCurrentView, regions }: Props) => {
             required
             autoComplete="given-name"
             data-testid="first-name-input"
-            className="bg-white"
+            className="bg-background"
             value={formData.first_name}
             onChange={handleChange}
           />
@@ -140,7 +140,7 @@ const Register = ({ setCurrentView, regions }: Props) => {
             required
             autoComplete="family-name"
             data-testid="last-name-input"
-            className="bg-white"
+            className="bg-background"
             value={formData.last_name}
             onChange={handleChange}
           />
@@ -150,7 +150,7 @@ const Register = ({ setCurrentView, regions }: Props) => {
             required
             autoComplete="organization"
             data-testid="company-name-input"
-            className="bg-white"
+            className="bg-background"
             value={formData.company_name}
             onChange={handleChange}
           />
@@ -161,7 +161,7 @@ const Register = ({ setCurrentView, regions }: Props) => {
             type="password"
             autoComplete="new-password"
             data-testid="password-input"
-            className="bg-white"
+            className="bg-background"
             value={formData.password}
             onChange={handleChange}
           />
@@ -171,7 +171,7 @@ const Register = ({ setCurrentView, regions }: Props) => {
             required
             autoComplete="address"
             data-testid="company-address-input"
-            className="bg-white"
+            className="bg-background"
             value={formData.company_address}
             onChange={handleChange}
           />
@@ -181,7 +181,7 @@ const Register = ({ setCurrentView, regions }: Props) => {
             required
             autoComplete="city"
             data-testid="company-city-input"
-            className="bg-white"
+            className="bg-background"
             value={formData.company_city}
             onChange={handleChange}
           />
@@ -190,7 +190,7 @@ const Register = ({ setCurrentView, regions }: Props) => {
             name="company_state"
             autoComplete="state"
             data-testid="company-state-input"
-            className="bg-white"
+            className="bg-background"
             value={formData.company_state}
             onChange={handleChange}
           />
@@ -200,7 +200,7 @@ const Register = ({ setCurrentView, regions }: Props) => {
             required
             autoComplete="postal-code"
             data-testid="company-zip-input"
-            className="bg-white"
+            className="bg-background"
             value={formData.company_zip}
             onChange={handleChange}
           />
@@ -253,7 +253,7 @@ const Register = ({ setCurrentView, regions }: Props) => {
             </Select.Content>
           </Select>
         </div>
-        <div className="border-b border-neutral-200 my-6" />
+        <div className="border-b border-border my-6" />
         <ErrorMessage error={message} data-testid="register-error" />
         <div className="flex items-center gap-2">
           <Checkbox

@@ -81,21 +81,21 @@ const MegaMenu = ({
         className="z-50"
       >
         <LocalizedClientLink
-          className="hover:text-ui-fg-base hover:bg-neutral-100 rounded-full px-3 py-2"
+          className="hover:text-foreground hover:bg-accent rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors"
           href="/store"
         >
           Products
         </LocalizedClientLink>
         {isHovered && (
-          <div className="fixed left-0 right-0 top-[60px] flex gap-32 py-10 px-20 bg-white border-b border-neutral-200 ">
+          <div className="fixed left-0 right-0 top-[60px] flex gap-32 py-10 px-20 bg-background border-b border-border shadow-sm">
             <div className="flex flex-col gap-2">
               {mainCategories.map((category) => (
                 <LocalizedClientLink
                   key={category.id}
                   href={`/categories/${category.handle}`}
                   className={clx(
-                    "hover:bg-neutral-100 hover:cursor-pointer rounded-full px-3 py-2 w-fit font-medium",
-                    selectedCategory === category.id && "bg-neutral-100"
+                    "hover:bg-accent hover:cursor-pointer rounded-md px-3 py-2 w-fit font-medium text-sm transition-colors",
+                    selectedCategory === category.id && "bg-accent text-foreground"
                   )}
                   onMouseEnter={() => handleCategoryHover(category.id)}
                   onMouseLeave={handleCategoryLeave}

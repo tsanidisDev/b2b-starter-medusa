@@ -22,13 +22,13 @@ export default async function Profile() {
   return (
     <div className="w-full" data-testid="profile-page-wrapper">
       <div className="mb-8 flex flex-col gap-y-4">
-        <Heading level="h2" className="text-lg text-neutral-950">
+        <Heading level="h2" className="text-lg text-foreground">
           Details
         </Heading>
         <ProfileCard customer={customer} />
       </div>
       <div className="mb-8 flex flex-col gap-y-4">
-        <Heading level="h2" className="text-lg text-neutral-950">
+        <Heading level="h2" className="text-lg text-foreground">
           Security
         </Heading>
         <SecurityCard customer={customer} />
@@ -38,5 +38,5 @@ export default async function Profile() {
 }
 
 const Divider = () => {
-  return <div className="w-full h-px bg-gray-200" />
+  return <div className="w-full h-px bg-border" />
 }

@@ -29,7 +29,7 @@ const Overview = ({ customer, orders }: OverviewProps) => {
             </span>
           </span>
         </div>
-        <div className="flex flex-col gap py-8 border-t border-gray-200">
+        <div className="flex flex-col gap py-8 border-t border-border">
           <div className="flex flex-col gap-y-8 h-full col-span-1 row-span-2 flex-1">
             <div className="flex items-start gap-x-16 mb-6">
               <div className="flex flex-col gap-y-4">
@@ -67,7 +67,7 @@ const Overview = ({ customer, orders }: OverviewProps) => {
 
             <div className="flex flex-col gap-y-4">
               <div className="flex items-center gap-x-2">
-                <Heading level="h3" className="text-xl text-neutral-950">
+                <Heading level="h3" className="text-xl text-foreground">
                   Recent orders
                 </Heading>
               </div>
@@ -87,7 +87,7 @@ const Overview = ({ customer, orders }: OverviewProps) => {
 
             <div className="flex flex-col gap-y-4">
               <div className="flex items-center gap-x-2">
-                <Heading level="h3" className="text-xl text-neutral-950">
+                <Heading level="h3" className="text-xl text-foreground">
                   Previously purchased items
                 </Heading>
               </div>

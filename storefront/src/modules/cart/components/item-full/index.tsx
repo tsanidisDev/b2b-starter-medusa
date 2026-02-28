@@ -98,17 +98,17 @@ const ItemFull = ({
             thumbnail={item.thumbnail}
             size="square"
             type="full"
-            className="bg-neutral-100 rounded-lg w-20 h-20"
+            className="bg-secondary rounded-lg w-20 h-20"
           />
         </LocalizedClientLink>
         <div className="flex flex-col gap-y-2 justify-between min-h-full self-stretch">
           <div className="flex flex-col">
-            <span className="text-neutral-600 text-[0.6rem]">BRAND</span>
+            <span className="text-muted-foreground text-[0.6rem]">BRAND</span>
 
-            <span className="txt-medium-plus text-neutral-950">
+            <span className="txt-medium-plus text-foreground">
               {item.product?.title}
             </span>
-            <span className="text-neutral-600 text-xs">
+            <span className="text-muted-foreground text-xs">
               {item.variant?.title}
             </span>
           </div>
@@ -122,7 +122,7 @@ const ItemFull = ({
               <div className="flex gap-x-3 shadow-[0_0_0_1px_rgba(0,0,0,0.1)] rounded-full w-fit p-px items-center">
                 <button
                   className={clx(
-                    "w-4 h-4 flex items-center justify-center text-neutral-600 hover:bg-neutral-100 rounded-full text-md",
+                    "w-4 h-4 flex items-center justify-center text-muted-foreground hover:bg-accent rounded-full text-md",
                     disabled ? "opacity-50 pointer-events-none" : "opacity-100"
                   )}
                   onClick={() => changeQuantity(item.quantity - 1)}
@@ -130,13 +130,13 @@ const ItemFull = ({
                 >
                   -
                 </button>
-                <span className="w-4 h-4 flex items-center justify-center text-neutral-950 text-xs">
+                <span className="w-4 h-4 flex items-center justify-center text-foreground text-xs">
                   {updating ? (
                     <Spinner size="12" />
                   ) : (
                     <Input
                       className={clx(
-                        "w-10 h-4 flex items-center justify-center text-center text-neutral-950 text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none bg-transparent shadow-none",
+                        "w-10 h-4 flex items-center justify-center text-center text-foreground text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none bg-transparent shadow-none",
                         disabled
                           ? "opacity-50 pointer-events-none"
                           : "opacity-100"
@@ -156,7 +156,7 @@ const ItemFull = ({
                 </span>
                 <button
                   className={clx(
-                    "w-4 h-4 flex items-center justify-center text-neutral-600 hover:bg-neutral-100 rounded-full text-md",
+                    "w-4 h-4 flex items-center justify-center text-muted-foreground hover:bg-accent rounded-full text-md",
                     disabled ? "opacity-50 pointer-events-none" : "opacity-100"
                   )}
                   onClick={() => changeQuantity(item.quantity + 1)}

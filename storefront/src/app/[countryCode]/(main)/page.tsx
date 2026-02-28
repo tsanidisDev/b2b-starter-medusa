@@ -1,4 +1,5 @@
 import { listRegions } from "@/lib/data/regions"
+import CategoryShowcase from "@/modules/home/components/category-showcase"
 import FeaturedProducts from "@/modules/home/components/featured-products"
 import Hero from "@/modules/home/components/hero"
 import SkeletonFeaturedProducts from "@/modules/skeletons/templates/skeleton-featured-products"
@@ -39,6 +40,7 @@ export default async function Home(props: {
   return (
     <div className="flex flex-col">
       <Hero />
+      <CategoryShowcase />
       <Suspense fallback={<SkeletonFeaturedProducts />}>
         <FeaturedProducts countryCode={countryCode} />
       </Suspense>

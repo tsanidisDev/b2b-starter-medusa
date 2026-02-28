@@ -61,7 +61,7 @@ const PromotionCode: React.FC<PromotionCodeProps> = ({ cart }) => {
   const [message, formAction] = useActionState(submitPromotionForm, null)
 
   return (
-    <div className="w-full bg-white flex flex-col">
+    <div className="w-full bg-background flex flex-col">
       <div className="txt-medium">
         {!isCheckout && !isPendingApproval && (
           <form action={(a) => addPromotionCode(a)} className="w-full mb-5">

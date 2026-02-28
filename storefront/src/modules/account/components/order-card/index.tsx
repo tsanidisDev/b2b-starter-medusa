@@ -23,7 +23,7 @@ const OrderCard = ({ order }: OrderCardProps) => {
 
   return (
     <>
-      <Container className="bg-white flex small:flex-row flex-col p-4 rounded-md small:justify-between small:items-center gap-y-2 items-start">
+      <Container className="bg-background border border-border flex small:flex-row flex-col p-4 rounded-md small:justify-between small:items-center gap-y-2 items-start">
         <div className="flex gap-x-4 items-center pl-3">
           <div className="flex min-w-10">
             {order.items?.slice(0, 3).map((i, index) => {
@@ -33,7 +33,7 @@ const OrderCard = ({ order }: OrderCardProps) => {
                 <div
                   key={i.id}
                   className={clx(
-                    "block w-7 h-7 border border-white bg-neutral-100 p-2 bg-cover bg-center rounded-md ml-[-5px]",
+                    "block w-7 h-7 border border-border bg-secondary p-2 bg-cover bg-center rounded-md ml-[-5px]",
                     {
                       "-rotate-3": index === 0 && numItems > 1,
                       "rotate-0": index === 0 && numItems === 1,
