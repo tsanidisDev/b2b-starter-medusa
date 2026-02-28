@@ -314,7 +314,7 @@ export default async function seedSilkShop({ container }: ExecArgs) {
             "Hand-finished pure mulberry silk scarf in the deep blues of the Aegean Sea. Naturally temperature-regulating and irresistibly soft.",
           status: ProductStatus.PUBLISHED,
           sales_channels: channelIds,
-          categories: [{ id: scarvesCategory.id }],
+          category_ids: [scarvesCategory.id],
           collection_id: bestsellers.id,
           options: [{ title: "Size", values: ["70×70 cm", "90×90 cm", "140×140 cm"] }],
           variants: [
@@ -357,7 +357,7 @@ export default async function seedSilkShop({ container }: ExecArgs) {
             "Generous silk shawl in warm terracotta, coral and gold — the colours of a Santorini sunset. 100% 16mm charmeuse silk.",
           status: ProductStatus.PUBLISHED,
           sales_channels: channelIds,
-          categories: [{ id: scarvesCategory.id }],
+          category_ids: [scarvesCategory.id],
           collection_id: newArrivals.id,
           options: [{ title: "Size", values: ["90×180 cm", "110×200 cm"] }],
           variants: [
@@ -392,7 +392,7 @@ export default async function seedSilkShop({ container }: ExecArgs) {
             "Flowing pure silk blouse with a relaxed silhouette. Features delicate pin-tuck detail at the placket. Available in ivory and deep navy.",
           status: ProductStatus.PUBLISHED,
           sales_channels: channelIds,
-          categories: [{ id: clothingCategory.id }],
+          category_ids: [clothingCategory.id],
           collection_id: newArrivals.id,
           options: [
             { title: "Size", values: ["XS", "S", "M", "L", "XL"] },
@@ -420,7 +420,7 @@ export default async function seedSilkShop({ container }: ExecArgs) {
             "Midi slip dress in liquid silk satin. Adjustable spaghetti straps, bias cut. Drapes beautifully for both daytime and evening.",
           status: ProductStatus.PUBLISHED,
           sales_channels: channelIds,
-          categories: [{ id: clothingCategory.id }],
+          category_ids: [clothingCategory.id],
           collection_id: luxuryCollection.id,
           options: [
             { title: "Size", values: ["XS", "S", "M", "L", "XL"] },
@@ -448,7 +448,7 @@ export default async function seedSilkShop({ container }: ExecArgs) {
             "Luxurious long robe in 22mm mulberry silk. Deep cuffs, wide shawl collar, inner tie. The ultimate loungewear upgrade.",
           status: ProductStatus.PUBLISHED,
           sales_channels: channelIds,
-          categories: [{ id: clothingCategory.id }],
+          category_ids: [clothingCategory.id],
           collection_id: luxuryCollection.id,
           options: [{ title: "Size", values: ["S", "M", "L", "XL"] }],
           variants: ["S", "M", "L", "XL"].map((size) => ({
@@ -469,7 +469,7 @@ export default async function seedSilkShop({ container }: ExecArgs) {
             "Classic two-piece pajama set in pure charmeuse silk. Piped trim detail on collar, cuffs and pockets. Breathable all year round.",
           status: ProductStatus.PUBLISHED,
           sales_channels: channelIds,
-          categories: [{ id: clothingCategory.id }],
+          category_ids: [clothingCategory.id],
           collection_id: bestsellers.id,
           options: [
             { title: "Size", values: ["XS", "S", "M", "L", "XL"] },
@@ -499,7 +499,7 @@ export default async function seedSilkShop({ container }: ExecArgs) {
             "Set of 2 silk pillowcases in 22mm mulberry silk. Reduces hair breakage, maintains moisture, and simply feels amazing. Oxford style with envelope closure.",
           status: ProductStatus.PUBLISHED,
           sales_channels: channelIds,
-          categories: [{ id: homeCategory.id }],
+          category_ids: [homeCategory.id],
           collection_id: bestsellers.id,
           options: [
             { title: "Size", values: ["Standard (50×75 cm)", "King (50×90 cm)"] },
@@ -527,7 +527,7 @@ export default async function seedSilkShop({ container }: ExecArgs) {
             "Lightweight silk-blend throw in Cycladic white with woven border detail. Perfect for warm Mediterranean evenings.",
           status: ProductStatus.PUBLISHED,
           sales_channels: channelIds,
-          categories: [{ id: homeCategory.id }],
+          category_ids: [homeCategory.id],
           collection_id: newArrivals.id,
           options: [{ title: "Size", values: ["130×170 cm"] }],
           variants: [
@@ -550,7 +550,7 @@ export default async function seedSilkShop({ container }: ExecArgs) {
             "Elegant table runner in heavyweight dupioni silk with raw edge finish. Adds quiet luxury to any table setting.",
           status: ProductStatus.PUBLISHED,
           sales_channels: channelIds,
-          categories: [{ id: homeCategory.id }],
+          category_ids: [homeCategory.id],
           collection_id: luxuryCollection.id,
           options: [{ title: "Size", values: ["35×180 cm", "35×250 cm"] }],
           variants: [
@@ -585,7 +585,7 @@ export default async function seedSilkShop({ container }: ExecArgs) {
             "7-fold hand-rolled silk tie woven with a subtle Greek key (meander) pattern. Each tie is a wearable work of art.",
           status: ProductStatus.PUBLISHED,
           sales_channels: channelIds,
-          categories: [{ id: accessoriesCategory.id }],
+          category_ids: [accessoriesCategory.id],
           collection_id: bestsellers.id,
           options: [
             {
@@ -613,7 +613,7 @@ export default async function seedSilkShop({ container }: ExecArgs) {
             "Hand-rolled pure silk pocket square with hand-painted Parthenon frieze motif. One size, one-of-a-kind character.",
           status: ProductStatus.PUBLISHED,
           sales_channels: channelIds,
-          categories: [{ id: accessoriesCategory.id }],
+          category_ids: [accessoriesCategory.id],
           collection_id: luxuryCollection.id,
           options: [{ title: "Colour", values: ["White", "Ivory", "Sky Blue"] }],
           variants: ["White", "Ivory", "Sky Blue"].map((colour) => ({
@@ -634,7 +634,7 @@ export default async function seedSilkShop({ container }: ExecArgs) {
             "Ultra-soft 19mm mulberry silk sleep mask with adjustable elastic. Blocks light without creasing delicate skin.",
           status: ProductStatus.PUBLISHED,
           sales_channels: channelIds,
-          categories: [{ id: accessoriesCategory.id }],
+          category_ids: [accessoriesCategory.id],
           collection_id: bestsellers.id,
           options: [{ title: "Colour", values: ["Ivory", "Black", "Rose"] }],
           variants: ["Ivory", "Black", "Rose"].map((colour) => ({
@@ -655,7 +655,7 @@ export default async function seedSilkShop({ container }: ExecArgs) {
             "Set of silk hair scrunchies — kind to hair, no crimping, no breakage. A small luxury with real benefits.",
           status: ProductStatus.PUBLISHED,
           sales_channels: channelIds,
-          categories: [{ id: accessoriesCategory.id }],
+          category_ids: [accessoriesCategory.id],
           collection_id: newArrivals.id,
           options: [
             { title: "Pack", values: ["Pack of 3", "Pack of 6"] },
@@ -691,7 +691,7 @@ export default async function seedSilkShop({ container }: ExecArgs) {
             "The complete bridal trousseau: robe, pajama set, eye mask and two pillowcases, presented in a keepsake gift box with satin ribbon.",
           status: ProductStatus.PUBLISHED,
           sales_channels: channelIds,
-          categories: [{ id: giftsCategory.id }],
+          category_ids: [giftsCategory.id],
           collection_id: weddingBridal.id,
           options: [{ title: "Size", values: ["S", "M", "L", "XL"] }],
           variants: ["S", "M", "L", "XL"].map((size) => ({
@@ -712,7 +712,7 @@ export default async function seedSilkShop({ container }: ExecArgs) {
             "A curated silk gift trio: one Aegean Blue scarf, one pillowcase and one Morpheus eye mask, presented in a luxe gift box.",
           status: ProductStatus.PUBLISHED,
           sales_channels: channelIds,
-          categories: [{ id: giftsCategory.id }],
+          category_ids: [giftsCategory.id],
           collection_id: bestsellers.id,
           options: [{ title: "Size", values: ["One Size"] }],
           variants: [

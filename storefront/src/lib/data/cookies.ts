@@ -73,7 +73,7 @@ export const removeAuthToken = async () => {
 
 export type Channel = "b2c" | "b2b"
 
-export const CHANNEL_COOKIE = "_medusa_channel"
+const CHANNEL_COOKIE = "_medusa_channel"
 
 export const getActiveChannel = async (): Promise<Channel> => {
   try {
