@@ -9,54 +9,26 @@
 > Configure essential Medusa modules for a real shop.
 
 ### 1.1 Stripe Payment Provider
-- [ ] Add Stripe config to `backend/medusa-config.ts`
-- [ ] Add `STRIPE_API_KEY` + `STRIPE_WEBHOOK_SECRET` to `.env.prod.example`
-- [ ] Add `NEXT_PUBLIC_STRIPE_KEY` to storefront env
+- [x] Add Stripe config to `backend/medusa-config.ts`
+- [x] Add `STRIPE_API_KEY` + `STRIPE_WEBHOOK_SECRET` to `.env.prod.example`
+- [x] Add `NEXT_PUBLIC_STRIPE_KEY` to storefront env
 - [ ] Enable Stripe in region(s) via Admin
 
 ### 1.2 S3 File Provider (product images)
-- [ ] Add S3 config to `backend/medusa-config.ts`
-- [ ] Add `S3_*` env vars to `.env.prod.example`
-- [ ] Replace local file module in production
+- [x] Add S3 config to `backend/medusa-config.ts`
+- [x] Add `S3_*` env vars to `.env.prod.example`
+- [x] Replace local file module in production
 
 ### 1.3 Nodemailer SMTP Notification Provider (order emails)
-- [ ] Install `@perseidesjs/notification-nodemailer` (community plugin, MIT, v3.1.1)
-- [ ] Register as notification provider in `backend/medusa-config.ts`:
-  ```ts
-  [Modules.NOTIFICATION]: {
-    resolve: "@medusajs/medusa/notification",
-    options: {
-      providers: [
-        {
-          resolve: "@perseidesjs/notification-nodemailer",
-          id: "nodemailer",
-          options: {
-            channels: ["email"],
-            from: process.env.SMTP_FROM,
-            host: process.env.SMTP_HOST,
-            port: Number(process.env.SMTP_PORT || "587"),
-            secure: process.env.SMTP_SECURE === "true",
-            auth: {
-              user: process.env.SMTP_USER,
-              pass: process.env.SMTP_PASS,
-            },
-          },
-        },
-      ],
-    },
-  },
-  ```
-- [ ] Add env vars to `.env.prod.example`: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `SMTP_SECURE`
-- [ ] Create subscribers for: `order.placed`, `order.shipped`, `order.canceled`
-- [ ] Plugin source: `github.com/perseidesjs/notification-nodemailer`
-- [ ] Options type: `SMTPConnection.Options & SMTPTransport.MailOptions & { from: string }`
-- [ ] Required options validated at startup: `host`, `port`, `from`
-- [ ] Works with any SMTP: Gmail, Mailgun, SES, self-hosted — zero vendor lock-in
+- [x] Install `@perseidesjs/notification-nodemailer` (community plugin, MIT, v3.1.1)
+- [x] Register as notification provider in `backend/medusa-config.ts`
+- [x] Add env vars to `.env.prod.example`: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `SMTP_SECURE`
+- [x] Create subscribers for: `order.placed`, `order.shipped`, `order.canceled`
 
 ### 1.4 Redis Caching + Locking Modules
-- [ ] Add Redis Caching Module to `medusa-config.ts`
-- [ ] Add Redis Locking Module Provider to `medusa-config.ts`
-- [ ] Add `CACHE_REDIS_URL` and `LOCKING_REDIS_URL` env vars
+- [x] Add Redis Caching Module to `medusa-config.ts`
+- [x] Add Redis Locking Module Provider to `medusa-config.ts`
+- [x] Add `CACHE_REDIS_URL` and `LOCKING_REDIS_URL` env vars
 
 ---
 
