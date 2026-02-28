@@ -219,6 +219,13 @@
     scrollbar-width: none; /* Firefox */
   }
 
+  /* Glassmorphism nav background — works with oklch CSS variables */
+  .glass-nav {
+    background-color: color-mix(in oklch, var(--background) 82%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
   input:focus ~ label,
   input:not(:placeholder-shown) ~ label {
     @apply -translate-y-2 text-xsmall-regular;

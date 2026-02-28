@@ -27,7 +27,7 @@ export async function NavigationHeader() {
       {/* Announcement bar — scrolls away, not sticky */}
       <AnnouncementBar />
 
-      <div className="sticky top-0 inset-x-0 z-50 bg-background/[0.97] backdrop-blur-[3px] border-b border-border">
+      <div className="sticky top-0 inset-x-0 z-50 glass-nav border-b border-border/60 shadow-sm">
         <header className="content-container mx-auto flex h-16 items-center justify-between gap-4">
         {/* Mobile hamburger — shown only on small screens */}
         <MobileNav categories={categories} />

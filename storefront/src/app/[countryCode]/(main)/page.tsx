@@ -1,6 +1,7 @@
 import { listRegions } from "@/lib/data/regions"
 import CategoryShowcase from "@/modules/home/components/category-showcase"
 import FeaturedProducts from "@/modules/home/components/featured-products"
+import NewArrivals from "@/modules/home/components/new-arrivals"
 import Hero from "@/modules/home/components/hero"
 import SkeletonFeaturedProducts from "@/modules/skeletons/templates/skeleton-featured-products"
 import { Metadata } from "next"
@@ -40,6 +41,9 @@ export default async function Home(props: {
   return (
     <div className="flex flex-col">
       <Hero />
+      <Suspense fallback={<SkeletonFeaturedProducts />}>
+        <NewArrivals countryCode={countryCode} />
+      </Suspense>
       <CategoryShowcase />
       <Suspense fallback={<SkeletonFeaturedProducts />}>
         <FeaturedProducts countryCode={countryCode} />
