@@ -106,8 +106,8 @@ REGION_COUNT=$(echo "${REGION_COUNT}" | tr -d '[:space:]')
 
 if [[ "${RESET}" == "true" ]] || [[ "${REGION_COUNT}" == "0" ]]; then
   echo ""
-  info "Step 3/4 — Seeding database"
-  (cd "${BACKEND}" && yarn seed 2>&1 | grep -E "info:|error:|warn:|Done" | tail -5) || {
+  info "Step 3/4 — Seeding database (silk shop)"
+  (cd "${BACKEND}" && yarn seed:silk 2>&1 | grep -E "info:|error:|warn:|Done" | tail -10) || {
     warn "Seed exited with an error — data may already exist, continuing..."
   }
   # Create default admin user on first seed

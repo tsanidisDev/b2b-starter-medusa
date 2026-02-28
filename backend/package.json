@@ -15,6 +15,8 @@
   "scripts": {
     "build": "medusa build",
     "seed": "medusa exec ./src/scripts/seed.ts",
+    "seed:silk": "medusa exec ./src/scripts/seed-silk-shop.ts",
+    "seed:clean": "medusa exec ./src/scripts/clean-seed-data.ts",
     "start": "medusa start",
     "dev": "medusa develop",
     "predeploy": "medusa db:migrate",

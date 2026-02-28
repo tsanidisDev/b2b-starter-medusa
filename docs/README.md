@@ -17,6 +17,7 @@
 |---|---|
 | [Theming System](features/theming.md) | shadcn/ui + @medusajs/ui CSS variable bridge |
 | [Production Modules](features/production-modules.md) | Stripe, S3, Nodemailer, Redis cache & locking |
+| [Silk Shop Seed](features/silk-shop-seed.md) | Greek silk products, regions, channels, API keys |
 
 ## Roadmap
 

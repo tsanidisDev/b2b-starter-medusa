@@ -37,65 +37,15 @@
 > Remove demo electronics, seed real silk product data.
 
 ### 2.1 Clean Existing Data
-- [ ] Create `backend/src/scripts/clean-seed-data.ts` to delete demo products, categories, collections
+- [x] Create `backend/src/scripts/clean-seed-data.ts` to delete demo products, categories, collections
 
 ### 2.2 New Seed Script
-- [ ] Create `backend/src/scripts/seed-silk-shop.ts` with:
-
-**Regions:**
-- Greece (GR) — EUR, default
-- EU (DE, FR, IT, ES, NL, AT, BE, etc.) — EUR
-- Cyprus (CY) — EUR
-
-**Tax Regions:**
-- Greece: 24% standard, 13% reduced (clothing may qualify)
-- Cyprus: 19%
-- EU: per-country defaults
-
-**Categories:**
-- Scarves & Shawls
-- Clothing (Blouses, Dresses, Skirts)
-- Home & Living (Pillowcases, Throws, Table Runners)
-- Accessories (Ties, Pocket Squares, Hair Accessories)
-- Gifts & Sets
-
-**Collections:**
-- "New Arrivals"
-- "Bestsellers"
-- "Luxury Collection"
-- "Wedding & Bridal"
-
-**Products (15-20 initial):**
-- Silk Scarf "Aegean Blue" — multiple sizes (70×70, 90×90, 140×140)
-- Silk Pillowcase Set — Standard, King
-- Silk Blouse "Olympia" — XS-XL
-- Silk Tie "Parthenon" — One Size
-- Silk Dress "Santorini" — XS-XL
-- Silk Throw "Mykonos" — 130×170
-- Silk Eye Mask "Morpheus" — One Size
-- Mulberry Silk Robe "Aphrodite" — S-XL
-- Silk Hair Scrunchie Set — Pack of 3, Pack of 6
-- Table Runner "Cyclades" — 35×180, 35×250
-- Silk Pocket Square "Acropolis" — One Size
-- Bridal Silk Set "Hera" — S-XL
-- Silk Pajama Set "Nyx" — XS-XL
-- Baby Silk Blanket "Eros" — One Size
-- Gift Set "Athena" — Scarf + Pillowcase + Eye Mask
-
-**Sales Channels:**
-- "B2C Storefront" — all products
-- "B2B Wholesale" — all products (with separate price list)
-
-**Publishable API Keys:**
-- One key scoped to B2C channel
-- One key scoped to B2B channel
-
-**Shipping:**
-- Standard Shipping (5-7 days) — flat €5.00 / free over €100
-- Express Shipping (1-3 days) — flat €12.00
-- Free Shipping on orders over €100
+- [x] Create `backend/src/scripts/seed-silk-shop.ts` with regions, products, channels, keys
 
 ### 2.3 Placeholder Images
+- [ ] Add real product images via S3 or upload through Admin
+
+---### 2.3 Placeholder Images
 - [ ] Use high-quality placeholder images (silk textures, fabric photos)
 - [ ] Upload via S3 or local file module
 
