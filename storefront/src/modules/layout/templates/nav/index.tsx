@@ -1,6 +1,7 @@
 import { retrieveCart } from "@/lib/data/cart"
 import { retrieveCustomer } from "@/lib/data/customer"
 import { listCategories } from "@/lib/data/categories"
+import { listAnnouncements } from "@/lib/data/announcements"
 import AccountButton from "@/modules/account/components/account-button"
 import CartButton from "@/modules/cart/components/cart-button"
 import LocalizedClientLink from "@/modules/common/components/localized-client-link"
@@ -21,11 +22,12 @@ export async function NavigationHeader() {
   const customer = await retrieveCustomer().catch(() => null)
   const cart = await retrieveCart()
   const categories = await listCategories({ offset: 0, limit: 8 }).catch(() => [])
+  const announcements = await listAnnouncements()
 
   return (
     <>
       {/* Announcement bar — scrolls away, not sticky */}
-      <AnnouncementBar />
+      <AnnouncementBar announcements={announcements} />
 
       <div className="sticky top-0 inset-x-0 z-50 glass-nav border-b border-border/60 shadow-sm">
         <header className="content-container mx-auto flex h-16 items-center justify-between gap-4">
