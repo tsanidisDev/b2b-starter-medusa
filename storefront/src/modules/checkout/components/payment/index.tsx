@@ -216,7 +216,8 @@ const Payment = ({
               onClick={handleSubmit}
               isLoading={isLoading}
               disabled={
-                (selectedPaymentMethod === "pp_stripe_stripe" &&
+                (stripeReady &&
+                  isStripeLike(selectedPaymentMethod) &&
                   !cardComplete) ||
                 (!selectedPaymentMethod && !paidByGiftcard)
               }

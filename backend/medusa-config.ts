@@ -80,6 +80,7 @@ module.exports = defineConfig({
       : {}),
 
     // ── Nodemailer SMTP Notification Provider ─────────────────────────────
+    // Docs: https://docs.perseides.org/docs/plugins/notification-nodemailer/getting-started
     ...(process.env.SMTP_HOST
       ? {
           [Modules.NOTIFICATION]: {
@@ -87,13 +88,13 @@ module.exports = defineConfig({
             options: {
               providers: [
                 {
-                  resolve: "@perseidesjs/notification-nodemailer",
+                  resolve: "@perseidesjs/notification-nodemailer/providers/nodemailer",
                   id: "nodemailer",
                   options: {
                     channels: ["email"],
                     from: process.env.SMTP_FROM,
                     host: process.env.SMTP_HOST,
-                    port: Number(process.env.SMTP_PORT || "587"),
+                    port: process.env.SMTP_PORT || "587",
                     secure: process.env.SMTP_SECURE === "true",
                     auth: {
                       user: process.env.SMTP_USER,

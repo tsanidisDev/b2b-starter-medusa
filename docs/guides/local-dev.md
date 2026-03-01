@@ -35,16 +35,21 @@ That's it. The script handles everything on first run:
 ### 1. Copy environment files
 
 ```bash
-# Root / backend
+# Backend + Docker Compose infra (root)
 cp backend/.env.template .env
-# Edit .env — the defaults work for local Docker infra
+
+# Backend local node dev
+cp backend/.env.template backend/.env
 
 # Storefront
 cp storefront/.env.template storefront/.env.local
 ```
 
-Set `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` in `storefront/.env.local` — grab it from the Admin after first boot:  
-Settings → Publishable API Keys → copy the key.
+The defaults in both templates work out-of-the-box with the Docker Compose infra (PostgreSQL on port 5433, Redis on port 6380).
+
+After first boot, set the publishable keys in `storefront/.env.local`:  
+→ Admin: Settings → Publishable API Keys  
+→ Set `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY`, `NEXT_PUBLIC_MEDUSA_B2C_PUBLISHABLE_KEY`, `NEXT_PUBLIC_MEDUSA_B2B_PUBLISHABLE_KEY`
 
 ### 2. Start infrastructure
 

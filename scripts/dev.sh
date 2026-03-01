@@ -14,8 +14,9 @@
 #   • Docker Desktop running
 #   • Node.js + yarn installed on host
 #   • yarn install run in backend/ and storefront/
-#   • .env present at repo root (copy from backend/.env.template — see README)
-#   • storefront/.env.local present (copy from storefront/.env.template)
+#   • .env present at repo root:          cp backend/.env.template .env
+#   • storefront/.env.local present:      cp storefront/.env.template storefront/.env.local
+#   • Fill in publishable keys in storefront/.env.local after first seed
 #
 set -euo pipefail
 
@@ -49,8 +50,8 @@ command -v docker >/dev/null 2>&1  || die "Docker not found. Install Docker Desk
 command -v node   >/dev/null 2>&1  || die "Node.js not found."
 command -v yarn   >/dev/null 2>&1  || die "yarn not found."
 
-[[ -f "${ROOT}/.env" ]]                 || die "Missing .env — copy backend/.env.template to .env and fill in values."
-[[ -f "${STOREFRONT}/.env.local" ]]     || die "Missing storefront/.env.local — copy storefront/.env.template."
+[[ -f "${ROOT}/.env" ]]                 || die "Missing .env — run: cp backend/.env.template .env"
+[[ -f "${STOREFRONT}/.env.local" ]]     || die "Missing storefront/.env.local — run: cp storefront/.env.template storefront/.env.local"
 [[ -d "${BACKEND}/node_modules" ]]      || die "backend/node_modules missing — run: cd backend && yarn install"
 [[ -d "${STOREFRONT}/node_modules" ]]   || die "storefront/node_modules missing — run: cd storefront && yarn install"
 

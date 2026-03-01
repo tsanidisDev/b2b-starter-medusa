@@ -1,6 +1,5 @@
 import LocalizedClientLink from "@/modules/common/components/localized-client-link"
 import LogoIcon from "@/modules/common/icons/logo"
-import MedusaCTA from "@/modules/layout/components/medusa-cta"
 
 export default function CheckoutLayout({
   children,
@@ -20,7 +19,7 @@ export default function CheckoutLayout({
         {children}
       </div>
       <div className="py-4 w-full flex items-center justify-center">
-        <MedusaCTA />
+        <p className="text-xs text-neutral-400">© {new Date().getFullYear()} Hellas Silk. All rights reserved.</p>
       </div>
     </div>
   )
