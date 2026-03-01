@@ -8,6 +8,7 @@ import { Text } from "@medusajs/ui"
 import { cn } from "@/lib/utils"
 import { addToCartEventBus } from "@/lib/data/cart-event-bus"
 import { VariantPrice } from "@/lib/util/get-product-price"
+import { useParams, useRouter } from "next/navigation"
 import LocalizedClientLink from "@/modules/common/components/localized-client-link"
 import PlaceholderImage from "@/modules/common/icons/placeholder-image"
 import Thumbnail from "../thumbnail"
@@ -41,6 +42,14 @@ export default function ProductCardClient({
   const [isAdding, setIsAdding] = useState(false)
   const productImage = product.thumbnail || product.images?.[0]?.url
   const isList = view === "list"
+  const { countryCode } = useParams()
+  const router = useRouter()
+
+  const navigateToProduct = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    router.push(`/${countryCode}/products/${product.handle}`)
+  }
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -62,9 +71,9 @@ export default function ProductCardClient({
 
   return (
     <>
-      <LocalizedClientLink href={`/products/${product.handle}`} className="group block">
-        {isList ? (
-          /* ── Compact list row ── */
+      {isList ? (
+        <LocalizedClientLink href={`/products/${product.handle}`} className="group block">
+          {/* ── Compact list row ── */}
           <div
             data-testid="product-wrapper"
             className="flex items-center gap-4 rounded-[var(--radius)] border border-border bg-card px-3 py-3 transition-shadow duration-200 group-hover:shadow-md"
@@ -112,8 +121,16 @@ export default function ProductCardClient({
               </div>
             </div>
           </div>
-        ) : (
-          /* ── Portrait grid card ── */
+        </LocalizedClientLink>
+      ) : (
+        /* ── Portrait grid card — click opens quick view ── */
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setQuickViewOpen(true)}
+          onKeyDown={(e) => e.key === "Enter" && setQuickViewOpen(true)}
+          className="group block cursor-pointer"
+        >
           <div
             data-testid="product-wrapper"
             className="flex flex-col overflow-hidden rounded-[var(--radius)] bg-card border border-border/30 transition-all duration-300 group-hover:border-border/70 group-hover:shadow-xl"
@@ -157,22 +174,22 @@ export default function ProductCardClient({
               <div className="absolute right-2 top-2 z-10 flex flex-col gap-1.5 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200">
                 <button
                   onClick={(e) => { e.preventDefault(); e.stopPropagation() }}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-background/90 shadow-md text-foreground/60 hover:text-foreground transition-colors backdrop-blur-sm"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-card shadow-md text-muted-foreground hover:text-foreground transition-colors"
                   title="Add to wishlist"
                 >
                   <Heart className="h-3.5 w-3.5" />
                 </button>
                 <button
                   onClick={(e) => { e.preventDefault(); e.stopPropagation() }}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-background/90 shadow-md text-foreground/60 hover:text-foreground transition-colors backdrop-blur-sm"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-card shadow-md text-muted-foreground hover:text-foreground transition-colors"
                   title="Compare"
                 >
                   <Layers className="h-3.5 w-3.5" />
                 </button>
                 <button
-                  onClick={openQuickView}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-background/90 shadow-md text-foreground/60 hover:text-foreground transition-colors backdrop-blur-sm"
-                  title="Quick view"
+                  onClick={navigateToProduct}
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-card shadow-md text-muted-foreground hover:text-foreground transition-colors"
+                  title="View product page"
                 >
                   <Eye className="h-3.5 w-3.5" />
                 </button>
@@ -180,13 +197,14 @@ export default function ProductCardClient({
                   onClick={handleAddToCart}
                   disabled={isAdding || isOutOfStock}
                   className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-full bg-background/90 shadow-md transition-colors backdrop-blur-sm",
-                    isAdding
-                      ? "text-primary"
-                      : "text-foreground/60 hover:text-foreground",
-                    isOutOfStock && "opacity-40 cursor-not-allowed"
+                    "flex h-8 w-8 items-center justify-center rounded-full bg-card shadow-md transition-colors",
+                    isOutOfStock
+                      ? "text-muted-foreground opacity-40 cursor-not-allowed"
+                      : isAdding
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-foreground"
                   )}
-                  title="Add to cart"
+                  title={isOutOfStock ? "Out of stock" : "Add to cart"}
                 >
                   <ShoppingBag className="h-3.5 w-3.5" />
                 </button>
@@ -205,7 +223,7 @@ export default function ProductCardClient({
               <div className="absolute inset-x-0 bottom-0 z-10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out p-3">
                 <button
                   onClick={openQuickView}
-                  className="flex w-full items-center justify-center rounded-full bg-background/92 backdrop-blur-md py-2.5 text-sm font-semibold text-foreground shadow border border-border/20 hover:bg-background transition-colors"
+                  className="flex w-full items-center justify-center rounded-full bg-card py-2.5 text-sm font-semibold text-foreground shadow-md border border-border hover:bg-background transition-colors"
                 >
                   Select Options
                 </button>
@@ -213,9 +231,9 @@ export default function ProductCardClient({
             </div>
 
             {/* Info */}
-            <div className="flex flex-col gap-1 px-3 py-3">
+            <div className="flex flex-col gap-0.5 px-2.5 py-2">
               <Text
-                className="text-sm font-medium text-foreground leading-snug line-clamp-2"
+                className="text-xs font-medium text-foreground leading-snug line-clamp-2"
                 data-testid="product-title"
               >
                 {product.title}
@@ -223,8 +241,8 @@ export default function ProductCardClient({
               {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
             </div>
           </div>
-        )}
-      </LocalizedClientLink>
+        </div>
+      )}
 
       <ProductQuickViewDialog
         open={quickViewOpen}

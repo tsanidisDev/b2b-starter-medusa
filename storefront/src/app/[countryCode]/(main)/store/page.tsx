@@ -25,6 +25,7 @@ type Params = {
     out_of_stock?: string
     min_price?: string
     max_price?: string
+    q?: string
   }>
   params: Promise<{
     countryCode: string
@@ -34,7 +35,7 @@ type Params = {
 export default async function StorePage(props: Params) {
   const params = await props.params
   const searchParams = await props.searchParams
-  const { sortBy, page, view } = searchParams
+  const { sortBy, page, view, q } = searchParams
 
   const sort = sortBy || "created_at"
   const pageNumber = page ? parseInt(page) : 1
@@ -46,14 +47,24 @@ export default async function StorePage(props: Params) {
   return (
     <div className="bg-background">
       <div
-        className="flex flex-col py-6 content-container gap-4"
+        className="content-container pt-4 pb-12"
         data-testid="category-container"
       >
-        <StoreBreadcrumb />
-        <div className="flex flex-col small:flex-row small:items-start gap-4">
-          <RefinementList sortBy={sort} categories={categories} />
-          <div className="w-full flex flex-col gap-3">
-            <StoreToolbar sortBy={sort} />
+        {/* Sticky breadcrumb */}
+        <div className="sticky top-16 z-20 -mx-6 px-6 py-2.5 border-b border-border/40 mb-4" style={{backgroundColor: 'color-mix(in oklch, var(--background) 80%, transparent)', backdropFilter: 'blur(8px)'}}>
+          <StoreBreadcrumb />
+        </div>
+
+        <div className="flex flex-col small:flex-row gap-4 items-start">
+          {/* Sticky sidebar */}
+          <div className="small:sticky small:top-[calc(4rem+49px)] small:self-start small:max-h-[calc(100vh-4rem-49px)] small:overflow-y-auto small:shrink-0 w-full small:w-[220px]">
+            <RefinementList sortBy={sort} categories={categories} />
+          </div>
+
+          <div className="flex-1 min-w-0 flex flex-col gap-3">
+            <div className="sticky top-[calc(4rem+49px)] z-30" style={{backgroundColor: 'color-mix(in oklch, var(--background) 85%, transparent)', backdropFilter: 'blur(8px)'}}>
+              <StoreToolbar sortBy={sort} />
+            </div>
             <Suspense fallback={<SkeletonProductGrid />}>
               <PaginatedProducts
                 sortBy={sort}
@@ -61,6 +72,7 @@ export default async function StorePage(props: Params) {
                 countryCode={params.countryCode}
                 customer={customer}
                 view={gridView}
+                q={q}
               />
             </Suspense>
           </div>

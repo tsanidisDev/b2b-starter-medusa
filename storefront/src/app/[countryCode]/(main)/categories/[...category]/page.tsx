@@ -17,6 +17,7 @@ type Props = {
     out_of_stock?: string
     min_price?: string
     max_price?: string
+    q?: string
   }>
 }
 
@@ -76,7 +77,7 @@ export async function generateStaticParams() {
 export default async function CategoryPage(props: Props) {
   const searchParams = await props.searchParams
   const params = await props.params
-  const { sortBy, page, view } = searchParams
+  const { sortBy, page, view, q } = searchParams
 
   const categories = await listCategories()
 
@@ -96,6 +97,7 @@ export default async function CategoryPage(props: Props) {
       page={page}
       countryCode={params.countryCode}
       view={view}
+      q={q}
     />
   )
 }

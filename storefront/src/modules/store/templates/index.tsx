@@ -27,14 +27,25 @@ const StoreTemplate = ({
   return (
     <div className="bg-background">
       <div
-        className="flex flex-col py-8 content-container gap-6"
+        className="content-container pt-4 pb-12"
         data-testid="category-container"
       >
-        <StoreBreadcrumb />
-        <div className="flex flex-col small:flex-row small:items-start gap-6">
-          <RefinementList sortBy={sort} categories={categories} />
-          <div className="w-full flex flex-col gap-3">
-            <StoreToolbar sortBy={sort} />
+        {/* Sticky breadcrumb */}
+        <div className="sticky top-16 z-20 -mx-6 px-6 py-2.5 bg-background/95 backdrop-blur-sm border-b border-border/40 mb-4">
+          <StoreBreadcrumb />
+        </div>
+
+        <div className="flex flex-col small:flex-row gap-4 items-start">
+          {/* Sticky sidebar */}
+          <div className="small:sticky small:top-[calc(4rem+49px)] small:self-start small:max-h-[calc(100vh-4rem-49px)] small:overflow-y-auto small:shrink-0 w-full small:w-[220px]">
+            <RefinementList sortBy={sort} categories={categories} />
+          </div>
+
+          <div className="flex-1 min-w-0 flex flex-col gap-3">
+            {/* Sticky toolbar */}
+            <div className="sticky top-[calc(4rem+49px)] z-10 bg-background/95 backdrop-blur-sm py-1 -mx-1 px-1">
+              <StoreToolbar sortBy={sort} />
+            </div>
             <Suspense fallback={<SkeletonProductGrid />}>
               <PaginatedProducts
                 sortBy={sort}

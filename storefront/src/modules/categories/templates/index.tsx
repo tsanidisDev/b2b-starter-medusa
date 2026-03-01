@@ -19,6 +19,7 @@ export default function CategoryTemplate({
   page,
   countryCode,
   view,
+  q,
 }: {
   categories: HttpTypes.StoreProductCategory[]
   currentCategory: HttpTypes.StoreProductCategory
@@ -26,6 +27,7 @@ export default function CategoryTemplate({
   page?: string
   countryCode: string
   view?: string
+  q?: string
 }) {
   const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "created_at"
@@ -36,23 +38,34 @@ export default function CategoryTemplate({
   return (
     <div className="bg-background">
       <div
-        className="flex flex-col py-8 content-container gap-6"
+        className="content-container pt-4 pb-12"
         data-testid="category-container"
       >
-        <CategoryBreadcrumb
-          categories={categories}
-          category={currentCategory}
-        />
-        <div className="flex flex-col small:flex-row small:items-start gap-6">
-          <RefinementList
-            sortBy={sort}
+        {/* Sticky breadcrumb */}
+        <div className="sticky top-16 z-20 -mx-6 px-6 py-2.5 border-b border-border/40 mb-4" style={{backgroundColor: 'color-mix(in oklch, var(--background) 80%, transparent)', backdropFilter: 'blur(8px)'}}>
+          <CategoryBreadcrumb
             categories={categories}
-            currentCategory={currentCategory}
-            listName={currentCategory.name}
-            data-testid="sort-by-container"
+            category={currentCategory}
           />
-          <div className="w-full flex flex-col gap-3">
-            <StoreToolbar sortBy={sort} />
+        </div>
+
+        <div className="flex flex-col small:flex-row gap-4 items-start">
+          {/* Sticky sidebar — scrolls independently */}
+          <div className="small:sticky small:top-[calc(4rem+49px)] small:self-start small:max-h-[calc(100vh-4rem-49px)] small:overflow-y-auto small:shrink-0 w-full small:w-[220px]">
+            <RefinementList
+              sortBy={sort}
+              categories={categories}
+              currentCategory={currentCategory}
+              listName={currentCategory.name}
+              data-testid="sort-by-container"
+            />
+          </div>
+
+          <div className="flex-1 min-w-0 flex flex-col gap-3">
+            <div className="sticky top-[calc(4rem+49px)] z-30" style={{backgroundColor: 'color-mix(in oklch, var(--background) 85%, transparent)', backdropFilter: 'blur(8px)'}}>
+              <StoreToolbar sortBy={sort} />
+            </div>
+
             {currentCategory.products?.length === 0 ? (
               <div className="flex flex-col gap-4 items-center justify-center py-20 text-center">
                 <Text className="text-sm text-muted-foreground">
@@ -82,6 +95,7 @@ export default function CategoryTemplate({
                   categoryId={currentCategory.id}
                   countryCode={countryCode}
                   view={gridView}
+                  q={q}
                 />
               </Suspense>
             )}

@@ -14,12 +14,13 @@ type PaginatedProductsParams = {
   id?: string[]
   order?: string
   customer_group_id?: string
+  q?: string
 }
 
 const GRID_COLS: Record<string, string> = {
-  "2": "grid-cols-1 small:grid-cols-2",
-  "3": "grid-cols-1 small:grid-cols-2 medium:grid-cols-3",
-  "4": "grid-cols-1 small:grid-cols-3 medium:grid-cols-4",
+  "2": "grid-cols-2",
+  "3": "grid-cols-3",
+  "4": "grid-cols-4",
   list: "grid-cols-1",
 }
 
@@ -32,6 +33,7 @@ export default async function PaginatedProducts({
   countryCode,
   customer,
   view = "3",
+  q,
 }: {
   sortBy?: SortOptions
   page: number
@@ -41,6 +43,7 @@ export default async function PaginatedProducts({
   countryCode: string
   customer?: B2BCustomer | null
   view?: string
+  q?: string
 }) {
   const queryParams: PaginatedProductsParams = {
     limit: 12,
@@ -58,6 +61,10 @@ export default async function PaginatedProducts({
 
   if (sortBy === "created_at") {
     queryParams["order"] = "created_at"
+  }
+
+  if (q) {
+    queryParams["q"] = q
   }
 
   const region = await getRegion(countryCode)
@@ -90,7 +97,7 @@ export default async function PaginatedProducts({
       </p>
 
       <ul
-        className={`grid w-full ${view === "list" ? "gap-1.5" : "gap-4"} ${gridClass}`}
+        className={`grid w-full ${view === "list" ? "gap-1.5" : "gap-3"} ${gridClass}`}
         data-testid="products-list"
       >
         {products.length > 0 ? (

@@ -69,7 +69,7 @@ const RefinementList = ({
 
   return (
     <div
-      className="flex w-full shrink-0 flex-col gap-3 small:w-[240px]"
+      className="flex w-full shrink-0 flex-col gap-3 small:w-[220px]"
       data-testid={dataTestId}
     >
       {/* Search */}

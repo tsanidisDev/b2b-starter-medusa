@@ -189,7 +189,7 @@ export default async function seedSilkShop({ container }: ExecArgs) {
   const countriesForTax = allCountries.filter((c) => !taxedCountries.has(c));
   if (countriesForTax.length > 0) {
     await createTaxRegionsWorkflow(container).run({
-      input: countriesForTax.map((country_code) => ({ country_code })),
+      input: countriesForTax.map((country_code) => ({ country_code, provider_id: "tp_system" })),
     });
   }
   logger.info("Finished seeding tax regions.");
