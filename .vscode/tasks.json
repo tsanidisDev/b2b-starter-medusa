@@ -1,0 +1,21 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Medusa Backend Dev",
+			"type": "shell",
+			"command": "cd backend && yarn dev",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Next.js Storefront Dev",
+			"type": "shell",
+			"command": "cd storefront && yarn dev",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

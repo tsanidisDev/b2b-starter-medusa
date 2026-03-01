@@ -76,7 +76,7 @@ const ProductVariantsTable = ({
       <div className="overflow-x-auto p-px">
         <Table className="w-full rounded-xl overflow-hidden shadow-borders-base border-none ">
           <Table.Header className="border-t-0">
-            <Table.Row className="bg-neutral-100 border-none hover:!bg-neutral-100">
+            <Table.Row className="bg-muted/30 border-none hover:!bg-muted/30">
               <Table.HeaderCell className="px-4">SKU</Table.HeaderCell>
               {product.options?.map((option) => {
                 if (option.title === "Default option") {

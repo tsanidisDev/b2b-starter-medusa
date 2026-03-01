@@ -123,7 +123,7 @@ const CartDrawer = ({
         {...(props as any)}
       >
         <Drawer.Trigger asChild>
-          <button className="transition-fg relative inline-flex w-fit items-center justify-center overflow-hidden outline-none txt-compact-small-plus gap-x-1.5 px-3 py-1.5 rounded-full hover:bg-neutral-100">
+          <button className="transition-fg relative inline-flex w-fit items-center justify-center overflow-hidden outline-none txt-compact-small-plus gap-x-1.5 px-3 py-1.5 rounded-md hover:bg-accent">
             <ShoppingBag />
             <span className="text-sm font-normal hidden small:inline-block">
               {cart && items && items.length > 0
@@ -209,9 +209,9 @@ const CartDrawer = ({
                       </Button>
                     </LocalizedClientLink>
                     {spendLimitExceeded && (
-                      <div className="flex items-center gap-x-2 bg-neutral-100 p-3 rounded-md shadow-borders-base">
+                      <div className="flex items-center gap-x-2 bg-amber-500/10 border border-amber-500/20 p-3 rounded-md">
                         <ExclamationCircle className="text-orange-500 w-fit overflow-visible" />
-                        <p className="text-neutral-950 text-xs">
+                        <p className="text-foreground text-xs">
                           This order exceeds your spending limit. Please contact
                           your manager for approval.
                         </p>

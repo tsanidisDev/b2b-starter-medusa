@@ -19,7 +19,7 @@ const Login = ({ setCurrentView }: Props) => {
       className="max-w-sm w-full h-full flex flex-col justify-center gap-6 my-auto"
       data-testid="login-page"
     >
-      <Text className="text-4xl text-neutral-950 text-left">
+      <Text className="text-4xl text-foreground text-left">
         Log in for faster
         <br />
         checkout.
@@ -43,10 +43,10 @@ const Login = ({ setCurrentView }: Props) => {
             required
             data-testid="password-input"
           />
-          <div className="flex flex-col gap-2 w-full border-b border-neutral-200 my-6" />
+          <div className="flex flex-col gap-2 w-full border-b border-border my-6" />
           <div className="flex items-center gap-2">
             <Checkbox name="remember_me" data-testid="remember-me-checkbox" />
-            <Text className="text-neutral-950 text-base-regular">
+            <Text className="text-foreground text-base-regular">
               Remember me
             </Text>
           </div>

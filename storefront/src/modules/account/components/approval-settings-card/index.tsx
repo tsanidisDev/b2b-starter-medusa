@@ -49,7 +49,7 @@ const ApprovalSettingsCard = ({
       <Container className="p-0 overflow-hidden">
         <div
           className={clx(
-            "grid grid-cols-2 gap-4 border-b border-neutral-200 overflow-hidden transition-all duration-200 ease-in-out p-4"
+            "grid grid-cols-2 gap-4 border-b border-border overflow-hidden transition-all duration-200 ease-in-out p-4"
           )}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -60,7 +60,7 @@ const ApprovalSettingsCard = ({
         >
           <TooltipProvider>
             <div className="flex flex-col gap-y-2">
-              <Text className="flex items-center gap-x-2 font-medium text-neutral-950">
+              <Text className="flex items-center gap-x-2 font-medium text-foreground">
                 Requires Admin Approval
                 <Tooltip content="This setting determines whether orders require admin approval before being processed. If enabled, orders will be held until an admin approves them.">
                   <InformationCircleSolid className="w-4 h-4" />
@@ -82,7 +82,7 @@ const ApprovalSettingsCard = ({
               </div>
             </div>
             <div className="flex flex-col gap-y-2">
-              <Text className="flex items-center gap-x-2 font-medium text-neutral-950">
+              <Text className="flex items-center gap-x-2 font-medium text-foreground">
                 Requires Sales Manager Approval
                 <Tooltip content="This setting determines whether orders require sales manager approval before being processed. If enabled, orders will be held until a sales manager approves them.">
                   <InformationCircleSolid className="w-4 h-4" />
@@ -100,7 +100,7 @@ const ApprovalSettingsCard = ({
         </div>
 
         {customer?.employee?.is_admin && (
-          <div className="flex items-center justify-end gap-2 bg-neutral-50 p-4">
+          <div className="flex items-center justify-end gap-2 bg-muted/30 p-4">
             {isEditing ? (
               <>
                 <Button

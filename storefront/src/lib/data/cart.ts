@@ -13,6 +13,7 @@ import {
   getCacheOptions,
   getCacheTag,
   getCartId,
+  removeAuthToken,
   removeCartId,
   setCartId,
 } from "./cookies"
@@ -63,9 +64,17 @@ export async function getOrSetCart(countryCode: string) {
     throw new Error(`Region not found for country code: ${countryCode}`)
   }
 
-  const headers = {
-    ...(await getAuthHeaders()),
+  // If retrieveCustomer returned null but a JWT cookie still exists, the
+  // token is stale (e.g. after a DB reset or account deletion). Clear it so
+  // cart creation proceeds as a guest and doesn't trigger a 404 inside the
+  // Medusa find-or-create-customer workflow step.
+  const rawAuthHeaders = await getAuthHeaders()
+  const hasStaleToken = !customer && "authorization" in rawAuthHeaders
+  if (hasStaleToken) {
+    await removeAuthToken()
   }
+
+  const headers = customer ? rawAuthHeaders : {}
 
   if (!cart) {
     const body = {

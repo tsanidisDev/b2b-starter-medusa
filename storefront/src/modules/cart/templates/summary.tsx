@@ -1,6 +1,7 @@
 "use client"
 
 import { useCart } from "@/lib/context/cart-context"
+import { useChannel } from "@/lib/context/channel-context"
 import { getCheckoutStep } from "@/lib/util/get-checkout-step"
 import CartToCsvButton from "@/modules/cart/components/cart-to-csv-button"
 import CartTotals from "@/modules/cart/components/cart-totals"
@@ -22,6 +23,7 @@ type SummaryProps = {
 
 const Summary = ({ customer, spendLimitExceeded }: SummaryProps) => {
   const { handleEmptyCart, cart } = useCart()
+  const { isB2B } = useChannel()
 
   if (!cart) return null
 
@@ -30,7 +32,8 @@ const Summary = ({ customer, spendLimitExceeded }: SummaryProps) => {
     ? `/checkout?step=${checkoutStep}`
     : "/checkout"
 
-  const checkoutButtonLink = customer ? checkoutPath : "/account"
+  // B2C guests go straight to checkout; B2B guests must log in first
+  const checkoutButtonLink = customer || !isB2B ? checkoutPath : "/account"
 
   const isPendingApproval = cart?.approvals?.some(
     (approval) => approval?.status === ApprovalStatusType.PENDING
@@ -43,9 +46,9 @@ const Summary = ({ customer, spendLimitExceeded }: SummaryProps) => {
       <PromotionCode cart={cart} />
       <Divider className="my-6" />
       {spendLimitExceeded && (
-        <div className="flex items-center gap-x-2 bg-neutral-100 p-3 rounded-md shadow-borders-base">
+        <div className="flex items-center gap-x-2 bg-amber-500/10 border border-amber-500/20 p-3 rounded-md">
           <ExclamationCircle className="text-orange-500 w-fit overflow-visible" />
-          <p className="text-neutral-950 text-xs">
+          <p className="text-foreground text-xs">
             This order exceeds your spending limit.
             <br />
             Please contact your manager for approval.
@@ -64,10 +67,13 @@ const Summary = ({ customer, spendLimitExceeded }: SummaryProps) => {
             ? spendLimitExceeded
               ? "Spending Limit Exceeded"
               : "Checkout"
-            : "Log in to Checkout"}
+            : isB2B
+              ? "Log in to Checkout"
+              : "Checkout"}
         </Button>
       </LocalizedClientLink>
-      {!!customer && (
+      {/* Quote buttons — B2B only */}
+      {isB2B && !!customer && (
         <RequestQuoteConfirmation>
           <Button
             className="w-full h-10 rounded-full shadow-borders-base"
@@ -78,7 +84,7 @@ const Summary = ({ customer, spendLimitExceeded }: SummaryProps) => {
           </Button>
         </RequestQuoteConfirmation>
       )}
-      {!customer && (
+      {isB2B && !customer && (
         <RequestQuotePrompt>
           <Button
             className="w-full h-10 rounded-full shadow-borders-base"

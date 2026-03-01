@@ -1,9 +1,9 @@
 import LocalizedClientLink from "@/modules/common/components/localized-client-link"
-import Radio from "@/modules/common/components/radio"
 import SquareMinus from "@/modules/common/icons/square-minus"
 import SquarePlus from "@/modules/common/icons/square-plus"
 import { HttpTypes } from "@medusajs/types"
-import { Container, Text } from "@medusajs/ui"
+import { Text } from "@medusajs/ui"
+import { cn } from "@/lib/utils"
 import { usePathname, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 
@@ -16,15 +16,13 @@ const CategoryList = ({
 }) => {
   const getCategoriesToExpand = useCallback(
     (category: HttpTypes.StoreProductCategory) => {
-      const categoriesToExpand = [category.id]
+      const ids = [category.id]
       let current = category
       while (current.parent_category_id) {
-        categoriesToExpand.push(current.parent_category_id)
-        current = categories.find(
-          (cat) => cat.id === current.parent_category_id
-        ) as HttpTypes.StoreProductCategory
+        ids.push(current.parent_category_id)
+        current = categories.find((c) => c.id === current.parent_category_id) as HttpTypes.StoreProductCategory
       }
-      return categoriesToExpand
+      return ids
     },
     [categories]
   )
@@ -34,43 +32,35 @@ const CategoryList = ({
   )
 
   const pathname = usePathname()
-
-  const toggleCategory = (categoryId: string) => {
-    setExpandedCategories((prev) =>
-      prev.includes(categoryId)
-        ? prev.filter((id) => id !== categoryId)
-        : [...prev, categoryId]
-    )
-  }
-
   const searchParams = useSearchParams()
+
+  const toggleCategory = (id: string) =>
+    setExpandedCategories((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    )
 
   const isCurrentCategory = (handle: string) =>
     pathname.split("/").slice(2).join("/") === `categories/${handle}`
 
   useEffect(() => {
     if (currentCategory) {
-      const categoriesToExpand = getCategoriesToExpand(currentCategory)
+      const toExpand = getCategoriesToExpand(currentCategory)
       setExpandedCategories((prev) => {
-        const newCategories = categoriesToExpand.filter(
-          (cat) => !prev.includes(cat)
-        )
-        return newCategories.length ? [...prev, ...newCategories] : prev
+        const next = toExpand.filter((id) => !prev.includes(id))
+        return next.length ? [...prev, ...next] : prev
       })
     }
   }, [currentCategory, getCategoriesToExpand])
 
-  const getCategoryMarginLeft = useCallback(
-    (category: HttpTypes.StoreProductCategory) => {
-      let level = 0
-      let currentCategory = category
-      while (currentCategory.parent_category_id) {
-        level++
-        currentCategory = categories.find(
-          (cat) => cat.id === currentCategory.parent_category_id
-        ) as HttpTypes.StoreProductCategory
+  const getDepth = useCallback(
+    (category: HttpTypes.StoreProductCategory): number => {
+      let depth = 0
+      let current = category
+      while (current.parent_category_id) {
+        depth++
+        current = categories.find((c) => c.id === current.parent_category_id) as HttpTypes.StoreProductCategory
       }
-      return level * 4
+      return depth
     },
     [categories]
   )
@@ -78,47 +68,56 @@ const CategoryList = ({
   const renderCategory = (category: HttpTypes.StoreProductCategory) => {
     const hasChildren = category.category_children.length > 0
     const isExpanded = expandedCategories.includes(category.id)
-    const paddingLeft = getCategoryMarginLeft(category)
+    const depth = getDepth(category)
+    const isCurrent = isCurrentCategory(category.handle)
+    const qs = searchParams.size ? `?${searchParams.toString()}` : ""
 
     return (
       <li key={category.id}>
-        <div className={`flex items-center gap-2 mb-2 pl-${paddingLeft}`}>
-          {hasChildren ? (
-            <div className="flex items-center gap-2 hover:text-neutral-700">
-              <button onClick={() => toggleCategory(category.id)}>
-                {isExpanded ? (
-                  <SquareMinus className="h-3 mx-1" />
-                ) : (
-                  <SquarePlus className="h-3 mx-1" />
-                )}
-              </button>
-              <LocalizedClientLink
-                href={`/categories/${category.handle}${
-                  searchParams.size ? `?${searchParams.toString()}` : ""
-                }`}
-                className="flex gap-2 items-center hover:text-neutral-700"
-              >
-                {category.name} ({category.products?.length})
-              </LocalizedClientLink>
-            </div>
-          ) : (
-            <LocalizedClientLink
-              href={`/categories/${category.handle}${
-                searchParams.size ? `?${searchParams.toString()}` : ""
-              }`}
-              className="flex gap-2 items-center hover:text-neutral-700 text-start hover:cursor-pointer"
+        <div
+          className={cn("flex items-center gap-1.5 py-1", {
+            "pl-0": depth === 0,
+            "pl-4": depth === 1,
+            "pl-8": depth >= 2,
+          })}
+        >
+          {hasChildren && (
+            <button
+              onClick={() => toggleCategory(category.id)}
+              className="text-muted-foreground hover:text-foreground shrink-0"
             >
-              <Radio checked={isCurrentCategory(category.handle)} />
-              {category.name} ({category.products?.length})
-            </LocalizedClientLink>
+              {isExpanded ? (
+                <SquareMinus className="h-3 w-3" />
+              ) : (
+                <SquarePlus className="h-3 w-3" />
+              )}
+            </button>
           )}
+          {!hasChildren && (
+            <span
+              className={cn("h-1 w-1 rounded-full shrink-0 transition-colors", {
+                "bg-primary": isCurrent,
+                "bg-border": !isCurrent,
+              })}
+            />
+          )}
+          <LocalizedClientLink
+            href={`/categories/${category.handle}${qs}`}
+            className={cn(
+              "text-xs leading-snug transition-colors",
+              isCurrent
+                ? "text-foreground font-medium"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {category.name}
+          </LocalizedClientLink>
         </div>
+
         {hasChildren && isExpanded && (
           <ul>
-            {category.category_children.map((childId) => {
-              const childCategory = categories.find(
-                (cat) => cat.id === childId.id
-              )
+            {category.category_children.map((child) => {
+              const childCategory = categories.find((c) => c.id === child.id)
               return childCategory ? renderCategory(childCategory) : null
             })}
           </ul>
@@ -128,24 +127,26 @@ const CategoryList = ({
   }
 
   return (
-    <Container className="flex flex-col p-0 divide-y divide-neutral-200">
-      <div className="flex justify-between items-center p-3">
-        <Text className="text-sm font-medium">Categories</Text>
+    <div className="flex flex-col">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border">
+        <Text className="text-xs font-semibold uppercase tracking-widest text-foreground">
+          Categories
+        </Text>
         {pathname.includes("/categories") && (
           <LocalizedClientLink
             href="/store"
-            className="text-xs text-neutral-500 hover:text-neutral-700"
+            className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
           >
             Clear
           </LocalizedClientLink>
         )}
       </div>
-      <ul className="flex flex-col gap-3 text-sm p-3 text-neutral-500">
+      <ul className="flex flex-col py-2 px-3">
         {categories
-          .filter((cat) => cat.parent_category_id === null)
+          .filter((c) => c.parent_category_id === null)
           .map(renderCategory)}
       </ul>
-    </Container>
+    </div>
   )
 }
 

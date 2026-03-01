@@ -8,8 +8,8 @@ export default async function AccountButton({
   customer: B2BCustomer | null
 }) {
   return (
-    <LocalizedClientLink className="hover:text-ui-fg-base" href="/account">
-      <button className="flex gap-1.5 items-center rounded-2xl bg-none shadow-none border-none hover:bg-neutral-100 px-2 py-1">
+    <LocalizedClientLink href="/account">
+      <button className="flex gap-1.5 items-center rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
         <User />
         <span className="hidden small:inline-block">
           {customer ? customer.first_name : "Log in"}
@@ -18,3 +18,4 @@ export default async function AccountButton({
     </LocalizedClientLink>
   )
 }
+

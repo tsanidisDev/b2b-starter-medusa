@@ -48,9 +48,9 @@ function FreeShippingInline({
   }
 }) {
   return (
-    <div className="bg-neutral-100 p-2 rounded-lg border">
+    <div className="bg-muted/30 p-2 rounded-lg border">
       <div className="space-y-1.5">
-        <div className="flex justify-between text-xs text-neutral-600">
+        <div className="flex justify-between text-xs text-muted-foreground">
           <div>
             {price.target_reached ? (
               <div className="flex items-center gap-1.5">
@@ -68,7 +68,7 @@ function FreeShippingInline({
             })}
           >
             Only{" "}
-            <span className="text-neutral-950">
+            <span className="text-foreground">
               {formatAmount(price.target_remaining, cart.currency_code)}
             </span>{" "}
             away
@@ -172,14 +172,14 @@ function FreeShippingPopup({
 
         <div className="flex gap-3">
           <LocalizedClientLink
-            className="rounded-2xl bg-transparent shadow-none outline-none border-[1px] border-white text-[15px] py-2.5 px-4"
+            className="rounded-2xl bg-transparent shadow-none outline-none border-[1px] border-border text-[15px] py-2.5 px-4"
             href="/cart"
           >
             View cart
           </LocalizedClientLink>
 
           <LocalizedClientLink
-            className="flex-grow rounded-2xl bg-white text-neutral-950 shadow-none outline-none border-[1px] border-white text-[15px] py-2.5 px-4 text-center"
+            className="flex-grow rounded-2xl bg-background text-foreground shadow-none outline-none border-[1px] border-border text-[15px] py-2.5 px-4 text-center"
             href="/store"
           >
             View Products

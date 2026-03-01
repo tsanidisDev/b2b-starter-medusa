@@ -66,11 +66,8 @@ const BulkTableQuantity = ({ variantId, onChange }: BulkTableQuantityProps) => {
     <div className="flex flex-row justify-between gap-2 w-full">
       <IconButton
         onClick={() => handleSubtract()}
-        className="rounded-full hover:bg-neutral-200"
-        variant="transparent"
-      >
-        <MinusMini />
-      </IconButton>
+        className="rounded-full hover:bg-accent"
+      />
       <Input
         value={quantity}
         onChange={(e) => handleChange(e)}
@@ -80,11 +77,8 @@ const BulkTableQuantity = ({ variantId, onChange }: BulkTableQuantityProps) => {
       />
       <IconButton
         onClick={() => handleAdd()}
-        className="rounded-full hover:bg-neutral-200"
-        variant="transparent"
-      >
-        <PlusMini />
-      </IconButton>
+        className="rounded-full hover:bg-accent"
+      />
     </div>
   )
 }

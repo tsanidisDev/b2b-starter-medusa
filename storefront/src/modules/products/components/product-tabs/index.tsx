@@ -26,7 +26,7 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
       <Accordion type="multiple" className="flex flex-col gap-y-2">
         {tabs.map((tab, i) => (
           <Accordion.Item
-            className="bg-neutral-100 small:px-24 px-6"
+            className="bg-muted/30 small:px-24 px-6"
             key={i}
             title={tab.label}
             headingSize="medium"
@@ -46,15 +46,15 @@ const ProductSpecsTab = ({ product }: ProductTabsProps) => {
       <Markdown
         components={{
           p: ({ children }) => (
-            <Text className="text-neutral-950 mb-2">{children}</Text>
+            <Text className="text-foreground mb-2">{children}</Text>
           ),
           h2: ({ children }) => (
-            <Text className="text-xl text-neutral-950 my-4 font-semibold">
+            <Text className="text-xl text-foreground my-4 font-semibold">
               {children}
             </Text>
           ),
           h3: ({ children }) => (
-            <Text className="text-lg text-neutral-950 mb-2">{children}</Text>
+            <Text className="text-lg text-foreground mb-2">{children}</Text>
           ),
         }}
       >

@@ -33,7 +33,7 @@ const CompanyForm = ({ cart }: { cart: B2BCart }) => {
         <RadioGroup.Option value="company">
           <div
             className={clx(
-              "flex items-center gap-x-4 text-sm text-neutral-600 cursor-pointer",
+              "flex items-center gap-x-4 text-sm text-muted-foreground cursor-pointer",
               isPendingApproval && "opacity-50 cursor-default"
             )}
           >
@@ -49,7 +49,7 @@ const CompanyForm = ({ cart }: { cart: B2BCart }) => {
         <RadioGroup.Option value="custom">
           <div
             className={clx(
-              "flex items-center gap-x-4 text-sm text-neutral-600 cursor-pointer",
+              "flex items-center gap-x-4 text-sm text-muted-foreground cursor-pointer",
               isPendingApproval && "opacity-50 cursor-default"
             )}
             onClick={() => {

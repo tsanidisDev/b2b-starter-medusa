@@ -54,29 +54,36 @@ These rules must **never** be violated:
 
 ## Development Workflow
 
-### Start the local dev stack
+### Local development (host Node — preferred for fast iteration)
+
+```bash
+bash scripts/dev.sh          # start everything (first run seeds DB + creates admin)
+bash scripts/dev.sh --reset  # wipe DB, re-seed from scratch
+```
+
+- Backend API: http://localhost:9000
+- Admin dashboard: http://localhost:9000/app  (`admin@example.com` / `supersecret`)
+- Storefront: http://localhost:8000
+
+See [docs/guides/local-dev.md](docs/guides/local-dev.md) for full setup steps.
+
+### Docker Compose dev stack
 
 ```bash
 docker compose up --build
 ```
 
-- Backend API: http://localhost:9000
-- Admin dashboard: http://localhost:9000/app
-- Storefront: http://localhost:8000
-
 ### Apply migrations
 
 ```bash
+# Host (local dev)
+cd backend && yarn medusa db:migrate
+
+# Inside container
 docker compose exec medusa yarn medusa db:migrate
 ```
 
-### Rebuild a single service
-
-```bash
-docker compose up --build medusa
-```
-
-### Run linter inside a container
+### Run linter
 
 ```bash
 docker compose exec medusa yarn lint
@@ -135,6 +142,25 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod up --build -d
 
 ---
 
+## Documentation
+
+Every implemented feature must have a corresponding doc in `docs/features/<name>.md` covering:
+- What it does and where the code lives
+- Key environment variables
+- Any gotchas or activation conditions
+
+Do **not** create standalone markdown files outside `docs/`. Use the existing structure:
+
+```
+docs/
+├── README.md               ← index
+├── PLAN.md                 ← roadmap / progress tracking
+├── guides/                 ← how-to guides (local dev, deployment, etc.)
+└── features/               ← one file per implemented feature
+```
+
+---
+
 ## Pre-PR Checklist
 
 Before opening or merging a pull request, verify:
@@ -144,6 +170,7 @@ Before opening or merging a pull request, verify:
 - [ ] `docker compose -f docker-compose.prod.yml --env-file .env.prod up --build -d` succeeds (if infra was changed).
 - [ ] No secrets, `.env.prod`, or generated build artefacts are staged.
 - [ ] No bind mounts added to `docker-compose.prod.yml`.
-- [ ] New environment variables are documented in `.env.prod.example`.
+- [ ] New environment variables documented in `.env.prod.example`.
+- [ ] Feature documented in `docs/features/<name>.md`.
 - [ ] TypeScript compiles without errors inside the container.
 - [ ] PR description explains how to test the change via Docker Compose.

@@ -19,25 +19,25 @@ export default async function Company() {
   return (
     <div className="w-full">
       <div className="mb-8 flex flex-col gap-y-4">
-        <Heading level="h2" className="text-lg text-neutral-950">
+        <Heading level="h2" className="text-lg text-foreground">
           Company Details
         </Heading>
         <CompanyCard company={company} regions={regions} />
       </div>
       <div className="mb-8 flex flex-col gap-y-4">
-        <Heading level="h2" className="text-lg text-neutral-950">
+        <Heading level="h2" className="text-lg text-foreground">
           Approval Settings
         </Heading>
         <ApprovalSettingsCard company={company} customer={customer} />
       </div>
       <div className="mb-8 flex flex-col gap-y-4">
-        <Heading level="h2" className="text-lg text-neutral-950">
+        <Heading level="h2" className="text-lg text-foreground">
           Employees
         </Heading>
         <EmployeesCard company={company} />
       </div>
       <div className="mb-8 flex flex-col gap-y-4">
-        <Heading level="h2" className="text-lg text-neutral-950">
+        <Heading level="h2" className="text-lg text-foreground">
           Invite Employees
         </Heading>
         <InviteEmployeeCard company={company} />

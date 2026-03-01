@@ -12,6 +12,12 @@ type Props = {
   searchParams: Promise<{
     sortBy?: SortOptions
     page?: string
+    view?: string
+    in_stock?: string
+    out_of_stock?: string
+    min_price?: string
+    max_price?: string
+    q?: string
   }>
 }
 
@@ -26,7 +32,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     const description = product_category.description ?? `${title} category.`
 
     return {
-      title: `${title} | Medusa Store`,
+      title: `${title} | Hellas Silk`,
       description,
       alternates: {
         canonical: `${params.category.join("/")}`,
@@ -38,34 +44,40 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 }
 
 export async function generateStaticParams() {
-  const countryCodes = await listRegions().then(
-    (regions) =>
-      regions
-        ?.map((r) => r.countries?.map((c) => c.iso_2))
-        .flat()
-        .filter(Boolean) as string[]
-  )
-
-  if (!countryCodes) {
-    return null
-  }
-
-  const categories = await listCategories()
-
-  return countryCodes
-    .map((countryCode) =>
-      categories.map((category) => ({
-        countryCode,
-        category: category.handle.split("/"),
-      }))
+  try {
+    const countryCodes = await listRegions().then(
+      (regions) =>
+        regions
+          ?.map((r) => r.countries?.map((c) => c.iso_2))
+          .flat()
+          .filter(Boolean) as string[]
     )
-    .flat()
+
+    if (!countryCodes) {
+      return []
+    }
+
+    const categories = await listCategories()
+
+    return countryCodes
+      .map((countryCode) =>
+        categories.map((category) => ({
+          countryCode,
+          category: category.handle.split("/"),
+        }))
+      )
+      .flat()
+  } catch {
+    // Backend unreachable at build time; pages will be generated on-demand
+    // dynamicParams = true ensures runtime generation still works
+    return []
+  }
 }
 
 export default async function CategoryPage(props: Props) {
   const searchParams = await props.searchParams
   const params = await props.params
-  const { sortBy, page } = searchParams
+  const { sortBy, page, view, q } = searchParams
 
   const categories = await listCategories()
 
@@ -84,6 +96,8 @@ export default async function CategoryPage(props: Props) {
       sortBy={sortBy}
       page={page}
       countryCode={params.countryCode}
+      view={view}
+      q={q}
     />
   )
 }

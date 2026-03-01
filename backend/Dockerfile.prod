@@ -10,14 +10,22 @@ RUN corepack enable
 COPY package.json yarn.lock .yarnrc.yml ./
 
 # Install ALL dependencies (devDeps are needed for `medusa build`)
-RUN yarn install --immutable
+RUN yarn install
 
 # Copy the rest of the source
 COPY . .
 
+# MEDUSA_BACKEND_URL must be present at build time so the Medusa admin SPA
+# (compiled by `yarn build`) uses the real public domain, not localhost:9000
+ARG MEDUSA_BACKEND_URL=http://localhost:9000
+ENV MEDUSA_BACKEND_URL=$MEDUSA_BACKEND_URL
+
 # Compile TypeScript and build the Medusa admin UI
-# Output lands in .medusa/server/
+# Output lands in .medusa/server/  (which contains a compiled medusa-config.js)
 RUN yarn build
+
+# Copy .yarnrc.yml into the compiled output so Yarn uses node-modules linker (not PnP)
+RUN cp .yarnrc.yml .medusa/server/.yarnrc.yml
 
 # ---- Production Stage ----
 FROM node:20-alpine
@@ -26,18 +34,13 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-RUN corepack enable
+# Copy only the compiled server output – no TypeScript, no dev tools
+COPY --from=builder /app/.medusa/server ./
 
-# Copy package manifests and the full node_modules from the builder.
-# Yarn v4 with nodeLinker: node-modules = standard node_modules directory,
-# so we can reuse it directly without re-installing.
-COPY --from=builder /app/node_modules ./node_modules
-COPY package.json yarn.lock .yarnrc.yml ./
-
-# Copy the compiled Medusa server
-COPY --from=builder /app/.medusa ./.medusa
+# Install production dependencies from the compiled output's package.json
+RUN corepack enable && yarn install
 
 EXPOSE 9000
 
-# medusa start runs the pre-built output in .medusa/server/
-CMD ["yarn", "start"]
+# Run the pre-compiled Medusa server from the compiled output directory
+CMD ["node_modules/.bin/medusa", "start"]

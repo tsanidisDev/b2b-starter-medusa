@@ -106,9 +106,9 @@ const Employee = ({
 
   return (
     <div className="flex flex-col">
-      <div className="flex justify-between p-4 border-b border-neutral-200">
+      <div className="flex justify-between p-4 border-b border-border">
         <div className="flex flex-col">
-          <Text className=" text-neutral-950 font-medium">
+          <Text className=" text-foreground font-medium">
             {employee.customer.first_name} {employee.customer.last_name}{" "}
             {isCurrentUser && "(You)"}{" "}
             {employee.is_admin && (
@@ -169,7 +169,7 @@ const Employee = ({
       </div>
       <form
         className={clx(
-          "bg-neutral-50 grid grid-cols-2 gap-4 border-b border-neutral-200 transition-all duration-300 ease-in-out",
+          "bg-muted/30 grid grid-cols-2 gap-4 border-b border-border transition-all duration-300 ease-in-out",
           {
             "max-h-[98px] opacity-100 p-4": isEditing,
             "max-h-0 h-0 opacity-0 border-b-0": !isEditing,
@@ -183,11 +183,11 @@ const Employee = ({
         }}
       >
         <div className="flex flex-col gap-y-2">
-          <Text className=" text-neutral-950 font-medium">Spending Limit</Text>
+          <Text className=" text-foreground font-medium">Spending Limit</Text>
           <CurrencyInput
             symbol={currencySymbolMap[company.currency_code!]}
             code={company.currency_code!}
-            className="bg-white rounded-full"
+            className="bg-background border border-input rounded-md"
             name="spending_limit"
             value={employeeData.spending_limit}
             onChange={(e) => {
@@ -199,9 +199,9 @@ const Employee = ({
           />
         </div>
         <div className="flex flex-col gap-y-2">
-          <Text className=" text-neutral-950 font-medium">Permissions</Text>
+          <Text className=" text-foreground font-medium">Permissions</Text>
           <NativeSelect
-            className="bg-white"
+            className="bg-background"
             name="permissions"
             value={employeeData.is_admin ? "true" : "false"}
             disabled={!customer?.employee?.is_admin}

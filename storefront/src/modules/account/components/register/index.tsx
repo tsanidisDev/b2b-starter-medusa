@@ -13,6 +13,7 @@ import { ChangeEvent, useActionState, useState } from "react"
 type Props = {
   setCurrentView: (view: LOGIN_VIEW) => void
   regions: HttpTypes.StoreRegion[]
+  channel: "b2c" | "b2b"
 }
 
 interface FormData {
@@ -58,10 +59,12 @@ const placeholder = ({
   )
 }
 
-const Register = ({ setCurrentView, regions }: Props) => {
+const Register = ({ setCurrentView, regions, channel }: Props) => {
   const [message, formAction] = useActionState(signup, null)
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [formData, setFormData] = useState<FormData>(initialFormData)
+
+  const isB2B = channel === "b2b"
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -80,18 +83,23 @@ const Register = ({ setCurrentView, regions }: Props) => {
     }))
   }
 
-  const isValid =
+  const b2cValid =
     termsAccepted &&
     !!formData.email &&
     !!formData.first_name &&
     !!formData.last_name &&
+    !!formData.password
+
+  const b2bValid =
+    b2cValid &&
     !!formData.company_name &&
-    !!formData.password &&
     !!formData.company_address &&
     !!formData.company_city &&
     !!formData.company_zip &&
     !!formData.company_country &&
     !!formData.currency_code
+
+  const isValid = isB2B ? b2bValid : b2cValid
 
   const countryNames = regions
     .flatMap((region) =>
@@ -106,12 +114,24 @@ const Register = ({ setCurrentView, regions }: Props) => {
       className="max-w-sm flex flex-col items-start gap-2 my-8"
       data-testid="register-page"
     >
-      <Text className="text-4xl text-neutral-950 text-left mb-4">
-        Create your
-        <br />
-        company account.
+      <Text className="text-4xl text-foreground text-left mb-4">
+        {isB2B ? (
+          <>
+            Create your
+            <br />
+            company account.
+          </>
+        ) : (
+          <>
+            Create your
+            <br />
+            account.
+          </>
+        )}
       </Text>
       <form className="w-full flex flex-col" action={formAction}>
+        {/* Hidden channel field so the server action knows which path to take */}
+        <input type="hidden" name="channel" value={channel} />
         <div className="flex flex-col w-full gap-y-4">
           <Input
             label="Email"
@@ -120,7 +140,7 @@ const Register = ({ setCurrentView, regions }: Props) => {
             type="email"
             autoComplete="email"
             data-testid="email-input"
-            className="bg-white"
+            className="bg-background"
             value={formData.email}
             onChange={handleChange}
           />
@@ -130,7 +150,7 @@ const Register = ({ setCurrentView, regions }: Props) => {
             required
             autoComplete="given-name"
             data-testid="first-name-input"
-            className="bg-white"
+            className="bg-background"
             value={formData.first_name}
             onChange={handleChange}
           />
@@ -140,18 +160,8 @@ const Register = ({ setCurrentView, regions }: Props) => {
             required
             autoComplete="family-name"
             data-testid="last-name-input"
-            className="bg-white"
+            className="bg-background"
             value={formData.last_name}
-            onChange={handleChange}
-          />
-          <Input
-            label="Company name"
-            name="company_name"
-            required
-            autoComplete="organization"
-            data-testid="company-name-input"
-            className="bg-white"
-            value={formData.company_name}
             onChange={handleChange}
           />
           <Input
@@ -161,99 +171,115 @@ const Register = ({ setCurrentView, regions }: Props) => {
             type="password"
             autoComplete="new-password"
             data-testid="password-input"
-            className="bg-white"
+            className="bg-background"
             value={formData.password}
             onChange={handleChange}
           />
-          <Input
-            label="Company address"
-            name="company_address"
-            required
-            autoComplete="address"
-            data-testid="company-address-input"
-            className="bg-white"
-            value={formData.company_address}
-            onChange={handleChange}
-          />
-          <Input
-            label="Company city"
-            name="company_city"
-            required
-            autoComplete="city"
-            data-testid="company-city-input"
-            className="bg-white"
-            value={formData.company_city}
-            onChange={handleChange}
-          />
-          <Input
-            label="Company state"
-            name="company_state"
-            autoComplete="state"
-            data-testid="company-state-input"
-            className="bg-white"
-            value={formData.company_state}
-            onChange={handleChange}
-          />
-          <Input
-            label="Company zip"
-            name="company_zip"
-            required
-            autoComplete="postal-code"
-            data-testid="company-zip-input"
-            className="bg-white"
-            value={formData.company_zip}
-            onChange={handleChange}
-          />
-          <Select
-            name="company_country"
-            required
-            autoComplete="country"
-            data-testid="company-country-input"
-            value={formData.company_country}
-            onValueChange={handleSelectChange("company_country")}
-          >
-            <Select.Trigger className="rounded-full h-10 px-4">
-              <Select.Value
-                placeholder={placeholder({
-                  placeholder: "Select a country",
-                  required: true,
-                })}
+
+          {/* B2B-only company fields */}
+          {isB2B && (
+            <>
+              <Input
+                label="Company name"
+                name="company_name"
+                required
+                autoComplete="organization"
+                data-testid="company-name-input"
+                className="bg-background"
+                value={formData.company_name}
+                onChange={handleChange}
               />
-            </Select.Trigger>
-            <Select.Content>
-              {countryNames?.map((country) => (
-                <Select.Item key={country} value={country}>
-                  {country}
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select>
-          <Select
-            name="currency_code"
-            required
-            autoComplete="currency"
-            data-testid="company-currency-input"
-            value={formData.currency_code}
-            onValueChange={handleSelectChange("currency_code")}
-          >
-            <Select.Trigger className="rounded-full h-10 px-4">
-              <Select.Value
-                placeholder={placeholder({
-                  placeholder: "Select a currency",
-                  required: true,
-                })}
+              <Input
+                label="Company address"
+                name="company_address"
+                required
+                autoComplete="address"
+                data-testid="company-address-input"
+                className="bg-background"
+                value={formData.company_address}
+                onChange={handleChange}
               />
-            </Select.Trigger>
-            <Select.Content>
-              {[...new Set(currencies)].map((currency) => (
-                <Select.Item key={currency} value={currency}>
-                  {currency.toUpperCase()} ({currencySymbolMap[currency]})
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select>
+              <Input
+                label="Company city"
+                name="company_city"
+                required
+                autoComplete="city"
+                data-testid="company-city-input"
+                className="bg-background"
+                value={formData.company_city}
+                onChange={handleChange}
+              />
+              <Input
+                label="Company state"
+                name="company_state"
+                autoComplete="state"
+                data-testid="company-state-input"
+                className="bg-background"
+                value={formData.company_state}
+                onChange={handleChange}
+              />
+              <Input
+                label="Company zip"
+                name="company_zip"
+                required
+                autoComplete="postal-code"
+                data-testid="company-zip-input"
+                className="bg-background"
+                value={formData.company_zip}
+                onChange={handleChange}
+              />
+              <Select
+                name="company_country"
+                required
+                autoComplete="country"
+                data-testid="company-country-input"
+                value={formData.company_country}
+                onValueChange={handleSelectChange("company_country")}
+              >
+                <Select.Trigger className="rounded-full h-10 px-4">
+                  <Select.Value
+                    placeholder={placeholder({
+                      placeholder: "Select a country",
+                      required: true,
+                    })}
+                  />
+                </Select.Trigger>
+                <Select.Content>
+                  {countryNames?.map((country) => (
+                    <Select.Item key={country} value={country}>
+                      {country}
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select>
+              <Select
+                name="currency_code"
+                required
+                autoComplete="currency"
+                data-testid="company-currency-input"
+                value={formData.currency_code}
+                onValueChange={handleSelectChange("currency_code")}
+              >
+                <Select.Trigger className="rounded-full h-10 px-4">
+                  <Select.Value
+                    placeholder={placeholder({
+                      placeholder: "Select a currency",
+                      required: true,
+                    })}
+                  />
+                </Select.Trigger>
+                <Select.Content>
+                  {[...new Set(currencies)].map((currency) => (
+                    <Select.Item key={currency} value={currency}>
+                      {currency.toUpperCase()} ({currencySymbolMap[currency]})
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select>
+            </>
+          )}
         </div>
-        <div className="border-b border-neutral-200 my-6" />
+        <div className="border-b border-border my-6" />
         <ErrorMessage error={message} data-testid="register-error" />
         <div className="flex items-center gap-2">
           <Checkbox

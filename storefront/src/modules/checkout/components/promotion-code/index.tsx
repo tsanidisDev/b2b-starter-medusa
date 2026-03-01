@@ -61,7 +61,7 @@ const PromotionCode: React.FC<PromotionCodeProps> = ({ cart }) => {
   const [message, formAction] = useActionState(submitPromotionForm, null)
 
   return (
-    <div className="w-full bg-white flex flex-col">
+    <div className="w-full bg-background flex flex-col">
       <div className="txt-medium">
         {!isCheckout && !isPendingApproval && (
           <form action={(a) => addPromotionCode(a)} className="w-full mb-5">
@@ -135,7 +135,10 @@ const PromotionCode: React.FC<PromotionCodeProps> = ({ cart }) => {
                               "percentage"
                                 ? `${promotion.application_method.value}%`
                                 : convertToLocale({
-                                    amount: promotion.application_method.value,
+                                    amount: Number(
+                                      promotion.application_method
+                                        .value
+                                    ),
                                     currency_code:
                                       promotion.application_method
                                         .currency_code,

@@ -5,7 +5,7 @@ import Items from "@/modules/order/components/items"
 import OrderDetails from "@/modules/order/components/order-details"
 import PaymentDetails from "@/modules/order/components/payment-details"
 import ShippingDetails from "@/modules/order/components/shipping-details"
-import { B2BOrder } from "types/global"
+import { B2BOrder } from "@/types/global"
 
 type OrderCompletedTemplateProps = {
   order: B2BOrder
@@ -18,7 +18,7 @@ export default async function OrderCompletedTemplate({
     <div className="py-6 min-h-[calc(100vh-64px)]">
       <div className="content-container flex flex-col justify-center items-center gap-y-10 max-w-4xl h-full w-full">
         <div
-          className="flex flex-col gap-4 max-w-4xl h-full bg-white w-full py-10"
+          className="flex flex-col gap-4 max-w-4xl h-full bg-background w-full py-10"
           data-testid="order-complete-container"
         >
           <Heading

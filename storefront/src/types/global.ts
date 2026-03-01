@@ -13,7 +13,6 @@ export enum SpendingLimitResetFrequency {
 export interface B2BCart extends HttpTypes.StoreCart {
   completed_at?: string
   company: QueryCompany
-  promotions?: HttpTypes.StorePromotion[]
   customer?: HttpTypes.StoreCustomer
   approvals?: QueryApproval[]
   approval_status?: QueryApprovalStatus
@@ -29,4 +28,4 @@ export interface B2BCustomer extends HttpTypes.StoreCustomer {
   cart?: B2BCart[]
 }
 
-export type FilterType = string | string[] | { [key: string]: any }
+export type FilterType = string | string[] | Record<string, unknown>

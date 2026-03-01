@@ -24,7 +24,7 @@ const Review = ({
     <div className="flex flex-col gap-y-2">
       <div className="flex items-start gap-x-1 w-full">
         <Text className="txt-xsmall text-neutral-500 mb-1">
-          By Completing this order, I agree to Medusa&apos;s{" "}
+          By completing this order, I agree to Hellas Silk&apos;s{" "}
           <LocalizedClientLink
             href="/terms-of-sale"
             className="hover:text-neutral-800"
@@ -44,9 +44,9 @@ const Review = ({
       </div>
       {spendLimitExceeded ? (
         <>
-          <div className="flex items-center gap-x-2 bg-neutral-100 p-3 rounded-md shadow-borders-base">
+          <div className="flex items-center gap-x-2 bg-amber-500/10 border border-amber-500/20 p-3 rounded-md">
             <ExclamationCircle className="text-orange-500 w-fit overflow-visible" />
-            <p className="text-neutral-950 text-xs">
+            <p className="text-foreground text-xs">
               This order exceeds your spending limit.
               <br />
               Please contact your manager for approval.

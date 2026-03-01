@@ -8,6 +8,8 @@ loadEnv(process.env.NODE_ENV!, process.cwd());
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
+    redisUrl: process.env.REDIS_URL,
+    workerMode: (process.env.MEDUSA_WORKER_MODE as "shared" | "server" | "worker") || "shared",
     http: {
       storeCors: process.env.STORE_CORS!,
       adminCors: process.env.ADMIN_CORS!,
@@ -19,7 +21,6 @@ module.exports = defineConfig({
       ssl: false,
       sslmode: "disable",
     },
-
   },
   modules: {
     [COMPANY_MODULE]: {
@@ -31,49 +32,138 @@ module.exports = defineConfig({
     [APPROVAL_MODULE]: {
       resolve: "./modules/approval",
     },
-    [Modules.CACHE]: process.env.REDIS_URL
+
+    // ── Stripe Payment Provider ───────────────────────────────────────────
+    ...(process.env.STRIPE_API_KEY
       ? {
-          resolve: "@medusajs/medusa/cache-redis",
-          options: {
-            redisUrl: process.env.REDIS_URL,
+          [Modules.PAYMENT]: {
+            resolve: "@medusajs/medusa/payment",
+            options: {
+              providers: [
+                {
+                  resolve: "@medusajs/medusa/payment-stripe",
+                  id: "stripe",
+                  options: {
+                    apiKey: process.env.STRIPE_API_KEY,
+                    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+                  },
+                },
+              ],
+            },
           },
         }
-      : {
-          resolve: "@medusajs/medusa/cache-inmemory",
-        },
-    [Modules.WORKFLOW_ENGINE]: process.env.REDIS_URL
+      : {}),
+
+    // ── S3 File Provider ──────────────────────────────────────────────────
+    ...(process.env.S3_BUCKET
       ? {
-          resolve: "@medusajs/medusa/workflow-engine-redis",
-          options: {
-            redis: {
-              url: process.env.REDIS_URL,
+          [Modules.FILE]: {
+            resolve: "@medusajs/medusa/file",
+            options: {
+              providers: [
+                {
+                  resolve: "@medusajs/medusa/file-s3",
+                  id: "s3",
+                  options: {
+                    file_url: process.env.S3_FILE_URL,
+                    access_key_id: process.env.S3_ACCESS_KEY_ID,
+                    secret_access_key: process.env.S3_SECRET_ACCESS_KEY,
+                    region: process.env.S3_REGION,
+                    bucket: process.env.S3_BUCKET,
+                    endpoint: process.env.S3_ENDPOINT,
+                  },
+                },
+              ],
+            },
+          },
+        }
+      : {}),
+
+    // ── Nodemailer SMTP Notification Provider ─────────────────────────────
+    // Docs: https://docs.perseides.org/docs/plugins/notification-nodemailer/getting-started
+    ...(process.env.SMTP_HOST
+      ? {
+          [Modules.NOTIFICATION]: {
+            resolve: "@medusajs/medusa/notification",
+            options: {
+              providers: [
+                {
+                  resolve: "@perseidesjs/notification-nodemailer/providers/nodemailer",
+                  id: "nodemailer",
+                  options: {
+                    channels: ["email"],
+                    from: process.env.SMTP_FROM,
+                    host: process.env.SMTP_HOST,
+                    port: process.env.SMTP_PORT || "587",
+                    secure: process.env.SMTP_SECURE === "true",
+                    auth: {
+                      user: process.env.SMTP_USER,
+                      pass: process.env.SMTP_PASS,
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        }
+      : {}),
+
+    // ── Production: Redis event bus, workflow engine, cache & locking ──────
+    ...(process.env.REDIS_URL
+      ? {
+          [Modules.EVENT_BUS]: {
+            resolve: "@medusajs/medusa/event-bus-redis",
+            options: { redisUrl: process.env.REDIS_URL },
+          },
+          [Modules.WORKFLOW_ENGINE]: {
+            resolve: "@medusajs/medusa/workflow-engine-redis",
+            options: {
+              redis: { url: process.env.REDIS_URL },
+            },
+          },
+          [Modules.CACHE]: {
+            resolve: "@medusajs/medusa/cache-redis",
+            options: {
+              redisUrl: process.env.CACHE_REDIS_URL || process.env.REDIS_URL,
+            },
+          },
+          [Modules.LOCKING]: {
+            resolve: "@medusajs/medusa/locking",
+            options: {
+              providers: [
+                {
+                  resolve: "@medusajs/medusa/locking-redis",
+                  id: "locking-redis",
+                  is_default: true,
+                  options: {
+                    redisUrl:
+                      process.env.LOCKING_REDIS_URL || process.env.REDIS_URL,
+                  },
+                },
+              ],
             },
           },
         }
       : {
-          resolve: "@medusajs/medusa/workflow-engine-inmemory",
-        },
+          [Modules.WORKFLOW_ENGINE]: {
+            resolve: "@medusajs/medusa/workflow-engine-inmemory",
+          },
+        }),
   },
   admin: {
-    vite: (config) => {
-      return {
-        server: {
-          host: "0.0.0.0",
-          // Allow all hosts when running in Docker (development mode)
-          // In production, this should be more restrictive
-          allowedHosts: [
-            "localhost",
-            ".localhost",
-            "127.0.0.1",
-          ],
-          hmr: {
-            // HMR websocket port inside container
-            port: 5173,
-            // Port browser connects to (exposed in docker-compose.yml)
-            clientPort: 5173,
-          },
+    disable: process.env.DISABLE_MEDUSA_ADMIN === "true",
+    backendUrl: process.env.MEDUSA_BACKEND_URL || "http://localhost:9000",
+    storefrontUrl: process.env.MEDUSA_STOREFRONT_URL || "http://localhost:8000",
+    vite: () => ({
+      server: {
+        host: "0.0.0.0",
+        allowedHosts: ["localhost", ".localhost", "127.0.0.1"],
+        hmr: {
+          // HMR websocket port inside container (dev only)
+          port: 5173,
+          clientPort: 5173,
         },
-      }
-    },
-
-  });
+      },
+    }),
+  },
+});

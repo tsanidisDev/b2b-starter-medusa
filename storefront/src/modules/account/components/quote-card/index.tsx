@@ -24,7 +24,7 @@ const QuoteCard = ({ quote }: QuoteCardProps) => {
   )
 
   return (
-    <Container className="bg-white flex small:flex-row flex-col p-4 rounded-md small:justify-between small:items-center gap-y-2 items-start">
+    <Container className="bg-background border border-border flex small:flex-row flex-col p-4 rounded-md small:justify-between small:items-center gap-y-2 items-start">
       <div className="flex gap-x-4 items-center pl-3">
         <div className="flex">
           {order.items?.slice(0, 3).map((item, index) => {
@@ -34,7 +34,7 @@ const QuoteCard = ({ quote }: QuoteCardProps) => {
               <div
                 key={item.id}
                 className={clx(
-                  "block w-7 h-7 bg-neutral-100 border border-white bg-cover bg-center rounded-md ml-[-5px] p-2",
+                  "block w-7 h-7 bg-secondary border border-border bg-cover bg-center rounded-md ml-[-5px] p-2",
                   {
                     "-rotate-3": index === 0 && numItems > 1,
                     "rotate-0": index === 0 && numItems === 1,

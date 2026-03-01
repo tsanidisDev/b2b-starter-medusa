@@ -51,7 +51,7 @@ const AccountNav = ({
                 <li>
                   <LocalizedClientLink
                     href="/account/profile"
-                    className="flex items-center justify-between py-4 border-b border-gray-200 px-8"
+                    className="flex items-center justify-between py-4 border-b border-border px-8"
                     data-testid="profile-link"
                   >
                     <>
@@ -63,10 +63,11 @@ const AccountNav = ({
                     </>
                   </LocalizedClientLink>
                 </li>
+                {!!customer?.employee && (
                 <li>
                   <LocalizedClientLink
                     href="/account/company"
-                    className="flex items-center justify-between py-4 border-b border-gray-200 px-8"
+                    className="flex items-center justify-between py-4 border-b border-border px-8"
                     data-testid="company-link"
                   >
                     <>
@@ -78,10 +79,11 @@ const AccountNav = ({
                     </>
                   </LocalizedClientLink>
                 </li>
+                )}
                 <li>
                   <LocalizedClientLink
                     href="/account/addresses"
-                    className="flex items-center justify-between py-4 border-b border-gray-200 px-8"
+                    className="flex items-center justify-between py-4 border-b border-border px-8"
                     data-testid="addresses-link"
                   >
                     <>
@@ -96,7 +98,7 @@ const AccountNav = ({
                 <li>
                   <LocalizedClientLink
                     href="/account/orders"
-                    className="flex items-center justify-between py-4 border-b border-gray-200 px-8"
+                    className="flex items-center justify-between py-4 border-b border-border px-8"
                     data-testid="orders-link"
                   >
                     <div className="flex items-center gap-x-2">
@@ -110,7 +112,7 @@ const AccountNav = ({
                   <li>
                     <LocalizedClientLink
                       href="/account/approvals"
-                      className="flex items-center justify-between py-4 border-b border-gray-200 px-8"
+                      className="flex items-center justify-between py-4 border-b border-border px-8"
                       data-testid="approvals-link"
                     >
                       <div className="flex items-center gap-x-2">
@@ -121,10 +123,11 @@ const AccountNav = ({
                     </LocalizedClientLink>
                   </li>
                 )}
+                {!!customer?.employee && (
                 <li>
                   <LocalizedClientLink
                     href="/account/quotes"
-                    className="flex items-center justify-between py-4 border-b border-gray-200 px-8"
+                    className="flex items-center justify-between py-4 border-b border-border px-8"
                     data-testid="quotes-link"
                   >
                     <div className="flex items-center gap-x-2">
@@ -134,10 +137,11 @@ const AccountNav = ({
                     <ChevronDown className="transform -rotate-90" />
                   </LocalizedClientLink>
                 </li>
+                )}
                 <li>
                   <button
                     type="button"
-                    className="flex items-center justify-between py-4 border-b border-gray-200 px-8 w-full"
+                    className="flex items-center justify-between py-4 border-b border-border px-8 w-full"
                     onClick={handleLogout}
                     data-testid="logout-button"
                   >
@@ -174,6 +178,7 @@ const AccountNav = ({
                 Profile
               </AccountNavLink>
             </li>
+            {!!customer?.employee && (
             <li>
               <AccountNavLink
                 href="/account/company"
@@ -183,6 +188,7 @@ const AccountNav = ({
                 Company
               </AccountNavLink>
             </li>
+            )}
             <li>
               <AccountNavLink
                 href="/account/addresses"
@@ -217,6 +223,7 @@ const AccountNav = ({
                 </AccountNavLink>
               </li>
             )}
+            {!!customer?.employee && (
             <li>
               <AccountNavLink
                 href="/account/quotes"
@@ -226,7 +233,8 @@ const AccountNav = ({
                 Quotes
               </AccountNavLink>
             </li>
-            <li className="text-neutral-400 hover:text-neutral-950">
+            )}
+            <li className="text-muted-foreground hover:text-foreground">
               <button
                 type="button"
                 onClick={handleLogout}
@@ -262,9 +270,9 @@ const AccountNavLink = ({
     <LocalizedClientLink
       href={href}
       className={clx(
-        "text-neutral-400 hover:text-neutral-950 flex items-center gap-x-2",
+        "text-muted-foreground hover:text-foreground flex items-center gap-x-2",
         {
-          "text-neutral-950": active,
+          "text-foreground": active,
         }
       )}
       data-testid={dataTestId}

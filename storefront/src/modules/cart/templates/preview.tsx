@@ -2,7 +2,6 @@
 
 import repeat from "@/lib/util/repeat"
 import { HttpTypes } from "@medusajs/types"
-import { BaseCartLineItem } from "@medusajs/types/dist/http/cart/common"
 import { clx } from "@medusajs/ui"
 import ItemPreview from "@/modules/cart/components/item-preview"
 import SkeletonLineItem from "@/modules/skeletons/components/skeleton-line-item"
@@ -34,7 +33,7 @@ const ItemsPreviewTemplate = ({ items, currencyCode }: ItemsTemplateProps) => {
                     key={item.id}
                     currencyCode={currencyCode}
                     item={
-                      item as BaseCartLineItem & {
+                      item as HttpTypes.StoreCartLineItem & {
                         metadata?: { note?: string }
                       }
                     }

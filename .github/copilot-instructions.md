@@ -6,11 +6,12 @@ This repository is the **Medusa v2 B2B Starter** — a monorepo containing a Med
 
 ## Guiding Principles
 
-1. **Demo-first delivery.** Every feature or fix must be verifiable by spinning up the stack with `docker compose` and manually exercising the flow in a browser. If it can't be shown in a demo, it's not done.
-2. **Docker Compose is the only workflow.** Use `docker-compose.yml` for local dev and `docker-compose.prod.yml` for demo/production-like deployments. Never reference `npm`, `yarn`, or `node` as host commands in documentation or scripts.
+1. **Demo-first delivery.** Every feature or fix must be verifiable in a browser. If it can't be shown in a demo, it's not done.
+2. **Local dev via `scripts/dev.sh`.** For fast iteration, run `bash scripts/dev.sh` on the host (Node + Docker for infra only). Docker Compose full-stack (`docker compose up --build`) is for CI and prod-like validation.
 3. **No secrets committed.** Secrets live in `.env` (dev) or `.env.prod` (prod-like), both git-ignored. Use `.env.prod.example` as the template. Generate secrets with `openssl rand -hex 32`.
 4. **No bind mounts in prod Compose.** `docker-compose.prod.yml` must never mount the host source tree into a container. Use named volumes only.
 5. **Redis-backed in production-like mode.** Never use in-memory cache or the in-memory workflow engine when `NODE_ENV=production`. Always set `REDIS_URL` and ensure `medusa-worker` is running as a separate container with `MEDUSA_WORKER_MODE=worker`.
+6. **Document every feature.** Add a `docs/features/<name>.md` for each implemented feature. Keep it concise: what it does, key files, env vars, gotchas.
 
 ---
 
@@ -30,9 +31,16 @@ This repository is the **Medusa v2 B2B Starter** — a monorepo containing a Med
 │   │   └── scripts/      # Seed / utility scripts
 │   ├── medusa-config.ts  # Medusa configuration
 │   └── Dockerfile.prod
-├── storefront/       # Next.js 14 storefront
+├── storefront/       # Next.js 15 storefront
 │   └── Dockerfile.prod
-├── docker-compose.yml       # Local dev stack
+├── docs/
+│   ├── README.md         # Docs index
+│   ├── PLAN.md           # Roadmap & progress
+│   ├── guides/           # How-to guides (local dev, deployment)
+│   └── features/         # One file per implemented feature
+├── scripts/
+│   └── dev.sh            # Local dev start/restart script
+├── docker-compose.yml       # Local dev stack (Docker)
 ├── docker-compose.prod.yml  # Demo / production-like stack
 └── .env.prod.example        # Template for prod env vars
 ```
@@ -111,6 +119,25 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod ps
 | `COOKIE_SECRET` | Yes | `openssl rand -hex 32` |
 | `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` | Yes | Obtain from Admin after first boot |
 | `REVALIDATE_SECRET` | Yes | `openssl rand -hex 32` |
+| `STRIPE_API_KEY` | Prod | Activates Stripe payment provider |
+| `STRIPE_WEBHOOK_SECRET` | Prod | Stripe webhook validation |
+| `S3_BUCKET` | Prod | Activates S3 file provider |
+| `SMTP_HOST` | Prod | Activates Nodemailer email notifications |
+| `CACHE_REDIS_URL` | Prod | Redis cache (defaults to `REDIS_URL`) |
+| `LOCKING_REDIS_URL` | Prod | Redis locking (defaults to `REDIS_URL`) |
+
+All production module vars are **opt-in** — the backend starts without them, using local fallbacks.
+
+---
+
+## Storefront Theming
+
+- UI library: **shadcn/ui** (new-york style) for all new components. Components in `storefront/src/components/ui/`.
+- **@medusajs/ui** is kept for existing B2B components — do not replace those imports.
+- Theme: CSS variables in `storefront/src/styles/globals.css` — oklch silk/gold palette.
+- Dark mode: `next-themes`. Toggle component at `storefront/src/components/theme-toggle.tsx`.
+- `cn()` utility: `storefront/src/lib/utils.ts` (clsx + tailwind-merge).
+- See [docs/features/theming.md](docs/features/theming.md) for full details.
 
 ---
 

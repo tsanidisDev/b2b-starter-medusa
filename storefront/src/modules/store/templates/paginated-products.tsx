@@ -4,7 +4,6 @@ import ProductPreview from "@/modules/products/components/product-preview"
 import { Pagination } from "@/modules/store/components/pagination"
 import { SortOptions } from "@/modules/store/components/refinement-list/sort-products"
 import { B2BCustomer } from "@/types"
-import { Container } from "@medusajs/ui"
 
 const PRODUCT_LIMIT = 12
 
@@ -15,6 +14,14 @@ type PaginatedProductsParams = {
   id?: string[]
   order?: string
   customer_group_id?: string
+  q?: string
+}
+
+const GRID_COLS: Record<string, string> = {
+  "2": "grid-cols-2",
+  "3": "grid-cols-3",
+  "4": "grid-cols-4",
+  list: "grid-cols-1",
 }
 
 export default async function PaginatedProducts({
@@ -25,6 +32,8 @@ export default async function PaginatedProducts({
   productsIds,
   countryCode,
   customer,
+  view = "3",
+  q,
 }: {
   sortBy?: SortOptions
   page: number
@@ -33,6 +42,8 @@ export default async function PaginatedProducts({
   productsIds?: string[]
   countryCode: string
   customer?: B2BCustomer | null
+  view?: string
+  q?: string
 }) {
   const queryParams: PaginatedProductsParams = {
     limit: 12,
@@ -52,6 +63,10 @@ export default async function PaginatedProducts({
     queryParams["order"] = "created_at"
   }
 
+  if (q) {
+    queryParams["q"] = q
+  }
+
   const region = await getRegion(countryCode)
 
   if (!region) {
@@ -68,27 +83,36 @@ export default async function PaginatedProducts({
   })
 
   const totalPages = Math.ceil(count / PRODUCT_LIMIT)
+  const gridClass = GRID_COLS[view] ?? GRID_COLS["3"]
 
   return (
-    <>
+    <div className="flex flex-col gap-4">
+      {/* Result count */}
+      <p className="text-xs text-muted-foreground">
+        {count === 0
+          ? "No results found"
+          : count === 1
+            ? "There is 1 result in total"
+            : `There are ${count} results in total`}
+      </p>
+
       <ul
-        className="grid grid-cols-1 w-full small:grid-cols-3 medium:grid-cols-4 gap-3"
+        className={`grid w-full ${view === "list" ? "gap-1.5" : "gap-3"} ${gridClass}`}
         data-testid="products-list"
       >
         {products.length > 0 ? (
-          products.map((p) => {
-            return (
-              <li key={p.id}>
-                <ProductPreview product={p} region={region} />
-              </li>
-            )
-          })
+          products.map((p) => (
+            <li key={p.id}>
+              <ProductPreview product={p} region={region} view={view} />
+            </li>
+          ))
         ) : (
-          <Container className="text-center text-sm text-neutral-500">
-            No products found for this category.
-          </Container>
+          <li className="col-span-full flex flex-col items-center justify-center py-20 gap-3">
+            <p className="text-sm text-muted-foreground">No products found.</p>
+          </li>
         )}
       </ul>
+
       {totalPages > 1 && (
         <Pagination
           data-testid="product-pagination"
@@ -96,6 +120,7 @@ export default async function PaginatedProducts({
           totalPages={totalPages}
         />
       )}
-    </>
+    </div>
   )
 }
+
