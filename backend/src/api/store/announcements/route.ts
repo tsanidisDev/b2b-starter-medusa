@@ -44,10 +44,22 @@ export const GET = async (
   const now = new Date()
 
   const announcements: Announcement[] = promotions
-    // Exclude expired campaigns
+    // Only include promotions whose campaign window is currently active.
+    // Rules (all optional — a promotion without a campaign is always shown):
+    //   • starts_at must be in the past (campaign has begun)
+    //   • ends_at must be in the future (campaign has not expired)
     .filter((promo) => {
-      const endsAt = promo.campaign?.ends_at
-      return !endsAt || new Date(endsAt) > now
+      const campaign = promo.campaign
+      if (!campaign) return true // no campaign constraint → show it
+
+      const { starts_at, ends_at } = campaign
+
+      // Campaign hasn't started yet
+      if (starts_at && new Date(starts_at) > now) return false
+      // Campaign has already ended
+      if (ends_at && new Date(ends_at) <= now) return false
+
+      return true
     })
     .map((promo): Announcement | null => {
       const method = promo.application_method
