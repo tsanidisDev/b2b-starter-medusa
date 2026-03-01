@@ -1,6 +1,7 @@
 "use client"
 
 import { useCart } from "@/lib/context/cart-context"
+import { useChannel } from "@/lib/context/channel-context"
 import { checkSpendingLimit } from "@/lib/util/check-spending-limit"
 import ApprovalStatusBanner from "@/modules/cart/components/approval-status-banner"
 import EmptyCartMessage from "@/modules/cart/components/empty-cart-message"
@@ -13,6 +14,7 @@ import { useMemo } from "react"
 
 const CartTemplate = ({ customer }: { customer: B2BCustomer | null }) => {
   const { cart } = useCart()
+  const { isB2B } = useChannel()
 
   const spendLimitExceeded = useMemo(
     () => checkSpendingLimit(cart, customer),
@@ -37,7 +39,7 @@ const CartTemplate = ({ customer }: { customer: B2BCustomer | null }) => {
               </div>
               <div className="grid grid-cols-1 small:grid-cols-[1fr_360px] gap-2">
                 <div className="flex flex-col gap-y-2">
-                  {!customer && <SignInPrompt />}
+                  {!customer && isB2B && <SignInPrompt />}
                   {cart?.approvals && cart.approvals.length > 0 && (
                     <ApprovalStatusBanner cart={cart} />
                   )}

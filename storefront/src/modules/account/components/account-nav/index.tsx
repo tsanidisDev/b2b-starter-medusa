@@ -63,6 +63,7 @@ const AccountNav = ({
                     </>
                   </LocalizedClientLink>
                 </li>
+                {!!customer?.employee && (
                 <li>
                   <LocalizedClientLink
                     href="/account/company"
@@ -78,6 +79,7 @@ const AccountNav = ({
                     </>
                   </LocalizedClientLink>
                 </li>
+                )}
                 <li>
                   <LocalizedClientLink
                     href="/account/addresses"
@@ -121,6 +123,7 @@ const AccountNav = ({
                     </LocalizedClientLink>
                   </li>
                 )}
+                {!!customer?.employee && (
                 <li>
                   <LocalizedClientLink
                     href="/account/quotes"
@@ -134,6 +137,7 @@ const AccountNav = ({
                     <ChevronDown className="transform -rotate-90" />
                   </LocalizedClientLink>
                 </li>
+                )}
                 <li>
                   <button
                     type="button"
@@ -174,6 +178,7 @@ const AccountNav = ({
                 Profile
               </AccountNavLink>
             </li>
+            {!!customer?.employee && (
             <li>
               <AccountNavLink
                 href="/account/company"
@@ -183,6 +188,7 @@ const AccountNav = ({
                 Company
               </AccountNavLink>
             </li>
+            )}
             <li>
               <AccountNavLink
                 href="/account/addresses"
@@ -217,6 +223,7 @@ const AccountNav = ({
                 </AccountNavLink>
               </li>
             )}
+            {!!customer?.employee && (
             <li>
               <AccountNavLink
                 href="/account/quotes"
@@ -226,6 +233,7 @@ const AccountNav = ({
                 Quotes
               </AccountNavLink>
             </li>
+            )}
             <li className="text-muted-foreground hover:text-foreground">
               <button
                 type="button"
